@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="eureka-service-discovery" />
+        <module name="config-server" />
+      </profile>
+      <profile name="Annotation profile for api-gateway" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
+        </processorPath>
+        <module name="api-gateway" />
+      </profile>
+      <profile name="Annotation profile for security-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
+        </processorPath>
+        <module name="community-portal-service" />
+        <module name="cdss-service" />
+        <module name="pharmaceutical-inventory-service" />
+        <module name="security-service" />
+        <module name="doctor-service" />
+        <module name="analytic-research-service" />
+        <module name="patient-service" />
+        <module name="notification-service" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="analytic-research-service" options="-parameters" />
+      <module name="api-gateway" options="-parameters" />
+      <module name="cdss-service" options="-parameters" />
+      <module name="community-portal-service" options="-parameters" />
+      <module name="config-server" options="-parameters" />
+      <module name="doctor-service" options="-parameters" />
+      <module name="eureka-service-discovery" options="-parameters" />
+      <module name="notification-service" options="-parameters" />
+      <module name="patient-service" options="-parameters" />
+      <module name="pharmaceutical-inventory-service" options="-parameters" />
+      <module name="security-service" options="-parameters" />
+    </option>
+  </component>
+</project>
