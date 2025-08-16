@@ -2,7 +2,9 @@ package com.vuong.securityservice.controller;
 
 import com.vuong.securityservice.constants.AppConstants;
 import com.vuong.securityservice.dto.*;
+import com.vuong.securityservice.entity.UserEntity;
 import com.vuong.securityservice.exception.CustomException;
+import com.vuong.securityservice.repository.UserRepository;
 import com.vuong.securityservice.service.UserService;
 import com.vuong.securityservice.utils.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,8 @@ public class UserController {
     private UserService userService;
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<UserRegistrationResponseDto> register(@RequestBody UserRegistrationRequestDto userDto)
@@ -45,6 +49,14 @@ public class UserController {
                 new UsernamePasswordAuthenticationToken(userLoginRequestDto.getEmail(), userLoginRequestDto.getPassword())
         );
         UserDto userDto = userService.getUserByEmail(userLoginRequestDto.getEmail());
+
+        UserEntity user = userRepository.findUserByEmail(userLoginRequestDto.getEmail())
+                .orElseThrow(() -> new CustomException(new ResponseMessageDto("No user found with email: " + userLoginRequestDto.getEmail(), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST));
+
+        if (!user.isActive()) {
+            throw new CustomException(new ResponseMessageDto("User is not active, wait or contact admin for activation", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+        }
+
 
         List<String> userRoles = new ArrayList<>();
         userRoles.add(String.valueOf(userDto.getRole()));
