@@ -50,7 +50,10 @@ public class WebSecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:5173");
+        config.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173",
+                "http://152.42.172.83:3000"
+                ));
         //config.addAllowedHeader("Authorization");
         config.setAllowedHeaders(Arrays.asList(
                 "Authorization",
