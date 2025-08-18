@@ -40,6 +40,7 @@ public class WebSecurityConfig {
                 .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth->{
                     auth
+                            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                             .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
                             .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
                             .requestMatchers(HttpMethod.DELETE, "/users/delete/**").hasAuthority(AppConstants.ROLE_ADMIN)
@@ -59,18 +60,18 @@ public class WebSecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.setAllowedOrigins(Arrays.asList(
+                "https://whodev.top",
                 "http://localhost:5173",
-                "http://152.42.172.83:3000",
-                "https://whodev.top"
+                "http://152.42.172.83:3000"
         ));
-        config.addAllowedHeader("Authorization");
-        config.setAllowedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "Accept",
-                "X-Requested-With",
-                "Cache-Control"
-        ));
+        config.setAllowedHeaders(Arrays.asList("*"));
+//        config.setAllowedHeaders(Arrays.asList(
+//                "Authorization",
+//                "Content-Type",
+//                "Accept",
+//                "X-Requested-With",
+//                "Cache-Control"
+//        ));
         config.addAllowedMethod("GET");
         config.addAllowedMethod("POST");
         config.addAllowedMethod("PUT");
