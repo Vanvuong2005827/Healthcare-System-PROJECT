@@ -60,7 +60,8 @@ public class WebSecurityConfig {
         config.setAllowCredentials(true);
         config.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
-                "http://152.42.172.83:3000"
+                "http://152.42.172.83:3000",
+                "https://whodev.top"
         ));
         config.addAllowedHeader("Authorization");
         config.setAllowedHeaders(Arrays.asList(
