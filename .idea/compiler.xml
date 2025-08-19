@@ -10,7 +10,7 @@
         <module name="eureka-service-discovery" />
         <module name="config-server" />
       </profile>
-      <profile name="Annotation profile for community-portal-service" enabled="true">
+      <profile name="Annotation profile for api-gateway" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
@@ -20,9 +20,9 @@
         <module name="community-portal-service" />
         <module name="cdss-service" />
         <module name="pharmaceutical-inventory-service" />
-        <module name="analytic-research-service" />
-        <module name="doctor-service" />
         <module name="security-service" />
+        <module name="doctor-service" />
+        <module name="analytic-research-service" />
         <module name="api-gateway" />
         <module name="patient-service" />
         <module name="notification-service" />
