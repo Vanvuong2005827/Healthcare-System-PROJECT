@@ -1,8 +1,11 @@
 package com.vuong.communityportalservice.service.implementation;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.vuong.communityportalservice.dto.PatientDto;
 import com.vuong.communityportalservice.dto.PostDto;
 import com.vuong.communityportalservice.dto.ResponseMessageDto;
+import com.vuong.communityportalservice.dto.UploadFileResponseDto;
 import com.vuong.communityportalservice.entity.PostEntity;
 import com.vuong.communityportalservice.exception.CustomException;
 import com.vuong.communityportalservice.networkmanager.PatientServiceFeignClient;
@@ -14,12 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +35,8 @@ public class PostServiceImplementation implements PostService {
     private PatientServiceFeignClient patientServiceFeignClient;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    private Cloudinary cloudinary;
 
     @Override
     public void createPost(PostDto postDto) throws CustomException {
@@ -149,5 +155,51 @@ public class PostServiceImplementation implements PostService {
     @Override
     public void deletePost(Long postId) throws CustomException {
         // will be implemented later
+    }
+
+    @Override
+    public UploadFileResponseDto upload(MultipartFile file) throws CustomException {
+        String originalFilename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+
+        try {
+            if (originalFilename.contains("..")) {
+                throw new CustomException(new ResponseMessageDto("Invalid path sequence in filename.", HttpStatus.UNAUTHORIZED), HttpStatus.UNAUTHORIZED);
+            }
+
+            LocalDate today = LocalDate.now();
+            String folder = String.format("%d/%02d/%02d",
+                    today.getYear(),
+                    today.getMonthValue(),
+                    today.getDayOfMonth()
+                    );
+
+            String publicId = folder + "/" + originalFilename;
+
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap(
+                            "resource_type", "raw",
+                            "public_id", publicId,
+                            "overwrite", true
+                    )
+            );
+
+            String downloadUrl = (String) uploadResult.get("secure_url");
+            long size = ((Number) uploadResult.get("bytes")).longValue();
+
+            return UploadFileResponseDto.builder()
+                    .fileUrl(downloadUrl)
+                    .filePath(downloadUrl)
+                    .fileType(StringUtils.getFilenameExtension(originalFilename))
+                    .fileSize(size)
+                    .fileName(originalFilename)
+                    .build();
+
+        } catch (CustomException ex) {
+            log.error("error occurred while uploading file: " + ex.getMessage());
+            throw ex;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
