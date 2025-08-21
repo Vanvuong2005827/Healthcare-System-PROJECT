@@ -62,8 +62,8 @@ public class PostServiceImplementation implements PostService {
             if(postDto.getPostTitle().length() > 100 || postDto.getPostTitle().length() < 5){
                 throw new CustomException(new ResponseMessageDto("Post title must be between 5 and 100 characters", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
             }
-            if(postDto.getPostContent().length() > 200 || postDto.getPostContent().length() < 10){
-                throw new CustomException(new ResponseMessageDto("Post content must be between 10 and 200 characters", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            if(postDto.getPostContent().length() > 500000 || postDto.getPostContent().length() < 10){
+                throw new CustomException(new ResponseMessageDto("Post content must be between 10 and 500000 characters", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
             }
 
             PostEntity postEntity = new PostEntity();
