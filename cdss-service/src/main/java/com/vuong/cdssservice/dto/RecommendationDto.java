@@ -13,6 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class RecommendationDto {
+    private Long id;
     private String patientId;
     private String doctorId;
     private String recommendationMessage;

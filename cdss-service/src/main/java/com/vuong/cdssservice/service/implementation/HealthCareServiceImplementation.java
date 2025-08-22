@@ -69,6 +69,7 @@ public class HealthCareServiceImplementation implements HealthCareService {
                     .doctorId(recommendation.getDoctorId())
                     .recommendationMessage(recommendation.getRecommendationMessage())
                     .rescheduleAppointment(recommendation.getRescheduleAppointment())
+                    .id(recommendation.getId())
                     .build();
         } catch (Exception e) {
             log.error("error in create method from HealthCareServiceImplementation class: {}", e.getMessage());
@@ -151,6 +152,7 @@ public class HealthCareServiceImplementation implements HealthCareService {
 
     RecommendationDto recommendationDto(Recommendation recommendation) {
         return RecommendationDto.builder()
+                .id(recommendation.getId())
                 .rescheduleAppointment(recommendation.getRescheduleAppointment())
                 .recommendationMessage(recommendation.getRecommendationMessage())
                 .items(recommendation.getItems().stream().map(this::recommendationItem).toList())
