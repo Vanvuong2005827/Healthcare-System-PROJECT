@@ -64,7 +64,7 @@ public class HealthCareServiceImplementation implements HealthCareService {
 
             recommendationRepository.save(recommendation);
 
-            PatientDto patientDto = patientServiceFeignClient.getCurrentPatient().getBody();
+            PatientDto patientDto = patientServiceFeignClient.getPatientById(recommendation.getPatientId()).getBody();
 
             // send notification to the patient
             try {
