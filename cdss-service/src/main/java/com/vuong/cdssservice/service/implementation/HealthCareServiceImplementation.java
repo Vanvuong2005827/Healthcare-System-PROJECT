@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +63,25 @@ public class HealthCareServiceImplementation implements HealthCareService {
             }
 
             recommendationRepository.save(recommendation);
+
+            PatientDto patientDto = patientServiceFeignClient.getCurrentPatient().getBody();
+
+            // send notification to the patient
+            try {
+                log.info("inside create method from HealthCareServiceImplementation class");
+                NotificationDto notificationDto = new NotificationDto();
+                notificationDto.setUserId(patientDto.getUserId());
+                notificationDto.setNotificationType("You have a recommendation from dr." + doctorDto.getLastName());
+                notificationDto.setNotificationText("Check your health recommendation for more detail!");
+                notificationDto.setTimestamp(LocalDateTime.now());
+                notificationDto.setIsRead(false);
+                notificationServiceFeignClient.createNotification(notificationDto);
+            } catch (Exception ex) {
+                log.error("Error occurred while sending notification to patient: {}", ex.getMessage());
+                throw new CustomException(new ResponseMessageDto("Error occurred while sending notification to patient", HttpStatus.INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            log.info("Notification sent successfully");
+
             return RecommendationDto.builder()
                     .createdDate(recommendation.getCreatedAt())
                     .items(recommendationDto.getItems())
