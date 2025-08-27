@@ -16,25 +16,16 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
         </processorPath>
-        <module name="pharmaceutical-inventory-service" />
-        <module name="patient-service" />
-        <module name="security-service" />
-      </profile>
-      <profile name="Annotation profile for community-portal-service" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.30/lombok-1.18.30.jar" />
-        </processorPath>
-        <module name="api-gateway" />
         <module name="community-portal-service" />
         <module name="cdss-service" />
-        <module name="notification-service" />
+        <module name="pharmaceutical-inventory-service" />
+        <module name="security-service" />
         <module name="doctor-service" />
         <module name="analytic-research-service" />
+        <module name="api-gateway" />
+        <module name="patient-service" />
+        <module name="notification-service" />
       </profile>
     </annotationProcessing>
   </component>

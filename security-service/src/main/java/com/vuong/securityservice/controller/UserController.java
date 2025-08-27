@@ -5,6 +5,7 @@ import com.vuong.securityservice.dto.*;
 import com.vuong.securityservice.entity.UserEntity;
 import com.vuong.securityservice.exception.CustomException;
 import com.vuong.securityservice.repository.UserRepository;
+import com.vuong.securityservice.service.RecoveryService;
 import com.vuong.securityservice.service.UserService;
 import com.vuong.securityservice.utils.JwtUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private RecoveryService recoveryService;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
@@ -92,5 +95,17 @@ public class UserController {
         log.info("Received request to get user with ID: {}", id);
         UserDto userDto = userService.getUserById(id);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/recovery/{email}")
+    public ResponseEntity<?> recoveryAccount(@PathVariable String email) throws CustomException{
+        log.info("Received request to recovery user with email: {}", email);
+        return new ResponseEntity<>(recoveryService.sendMail(email), HttpStatus.OK);
+    }
+
+    @PostMapping("/recovery/verify")
+    public ResponseEntity<?> verifyCode(@RequestBody VerifyCodeDto verifyCodeDto) throws CustomException{
+        log.info("Received request to verify user with email: {}", verifyCodeDto.getEmail());
+        return new ResponseEntity<>(recoveryService.verifyCode(verifyCodeDto), HttpStatus.OK);
     }
 }

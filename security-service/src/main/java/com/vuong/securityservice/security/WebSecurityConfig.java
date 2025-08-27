@@ -44,6 +44,7 @@ public class WebSecurityConfig {
                             .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
                             .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
                             .requestMatchers(HttpMethod.DELETE, "/users/delete/**").hasAuthority(AppConstants.ROLE_ADMIN)
+                            .requestMatchers(HttpMethod.POST, "/users/recovery/**").permitAll()
                             .requestMatchers(HttpMethod.GET, "/users/**").hasAnyAuthority(AppConstants.ROLE_ADMIN, AppConstants.ROLE_DOCTOR, AppConstants.ROLE_PATIENT)
                             .anyRequest().permitAll();
 

@@ -39,6 +39,7 @@ public class SendMailUtil {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
 
+
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED, StandardCharsets.UTF_8.name());
             mimeMessageHelper.setFrom("noreply@whodev.top");
             mimeMessageHelper.setTo(mail.getTo());
@@ -51,7 +52,7 @@ public class SendMailUtil {
             mailSender.send(mimeMessage);
         } catch (Exception e) {
             log.error("error sending email");
-            throw new CustomException(new ResponseMessageDto("Error sending email", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            throw new CustomException(new ResponseMessageDto("Error sending email: " + e.getMessage(), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
         }
     }
 
