@@ -50,5 +50,13 @@ public class EmailSenderServiceImplementation implements EmailSenderService {
         }
     }
 
+    @Override
+    public void sendMailWithTemplate(DataMailRequest dataMailRequest) throws Exception {
+        System.out.println(dataMailRequest.getTo());
+        System.out.println(dataMailRequest.getSubject());
+        System.out.println(dataMailRequest.getTemplate());
+        sendMailUtil.sendEmailWithHTML(dataMailRequest);
+    }
+
 
 }

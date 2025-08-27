@@ -67,6 +67,14 @@ public class NotificationController {
         return new ResponseEntity<>(new ResponseMessageDto("Mail sent successfully", HttpStatus.OK), HttpStatus.OK);
     }
 
+    @PostMapping("/email/with/template")
+    public ResponseEntity<?> sendEmailWithTemplate(@RequestBody String dataMailRequest) throws Exception {
+        log.info("inside sendEmailWithTemplate method of NotificationController");
+
+        emailSenderService.sendMailWithTemplate(objectMapper.readValue(dataMailRequest, DataMailRequest.class));
+        return new ResponseEntity<>(new ResponseMessageDto("Mail sent successfully", HttpStatus.OK), HttpStatus.OK);
+    }
+
     // controllers for notification preferences
 
     @PostMapping("/preferences/create")
