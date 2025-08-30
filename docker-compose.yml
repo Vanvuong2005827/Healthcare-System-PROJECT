@@ -60,6 +60,7 @@ services:
       - MYSQL_DB=zipkin
       - MYSQL_USER=hms
       - MYSQL_PASS=hms
+      - JDK_JAVA_OPTIONS=--add-modules=java.sql.rowset
     depends_on:
       mysql:
         condition: service_healthy
