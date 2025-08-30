@@ -54,12 +54,12 @@ services:
     container_name: zipkin
     ports: [ "9411:9411" ]
     environment:
-       - STORAGE_TYPE=mysql
-       - MYSQL_HOST=mysql
-       - MYSQL_TCP_PORT=3306
-       - MYSQL_DB=zipkin
-       - MYSQL_USER=hms
-       - MYSQL_PASS=hms
+      - STORAGE_TYPE=mysql
+      - MYSQL_HOST=mysql
+      - MYSQL_TCP_PORT=3306
+      - MYSQL_DB=zipkin
+      - MYSQL_USER=hms
+      - MYSQL_PASS=hms
     depends_on:
       mysql:
         condition: service_healthy
