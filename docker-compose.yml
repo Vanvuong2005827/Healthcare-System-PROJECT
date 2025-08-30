@@ -50,7 +50,7 @@ services:
     networks: [hms-net]
 
   zipkin:
-    image: openzipkin/zipkin:2.24
+    image: ghcr.io/openzipkin/zipkin:2.24.4
     container_name: zipkin
     ports: [ "9411:9411" ]
     environment:
@@ -60,7 +60,6 @@ services:
       - MYSQL_DB=zipkin
       - MYSQL_USER=hms
       - MYSQL_PASS=hms
-      - JDK_JAVA_OPTIONS=--add-modules=java.sql.rowset
     depends_on:
       mysql:
         condition: service_healthy
