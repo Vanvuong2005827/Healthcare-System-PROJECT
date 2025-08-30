@@ -58,8 +58,8 @@ services:
       - MYSQL_HOST=mysql
       - MYSQL_TCP_PORT=3306
       - MYSQL_DB=zipkin
-      - MYSQL_USER=hms
-      - MYSQL_PASS=hms
+      - MYSQL_USER=root
+      - MYSQL_PASS=root
     depends_on:
       mysql:
         condition: service_healthy
