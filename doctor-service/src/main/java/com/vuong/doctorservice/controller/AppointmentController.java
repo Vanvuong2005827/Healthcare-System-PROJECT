@@ -161,4 +161,13 @@ public class AppointmentController {
         log.info("Appointments fetched successfully");
         return new ResponseEntity<>(appointmentList, HttpStatus.OK);
     }
+
+    @GetMapping("/get/all/availability/appointment")
+    public ResponseEntity<List<DoctorAvailabilityDto>> allAvailabilityAppointment()
+            throws CustomException {
+        log.info("Received request to get all availability appointments");
+        List<DoctorAvailabilityDto> availabilityList = doctorAppointmentService.getAllAvailabilityAppointment();
+        log.info("Appointments fetched successfully");
+        return new ResponseEntity<>(availabilityList, HttpStatus.OK);
+    }
 }

@@ -20,13 +20,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -196,7 +194,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public void cancelAppointment(Long appointmentId) throws CustomException {
-        try{
+        try {
             log.info("inside cancelAppointment method in DoctorAppointmentServiceImplementation");
             Optional<AppointmentEntity> appointmentOptional = doctorAppointmentRepository.findById(appointmentId);
             if (appointmentOptional.isEmpty()) {
@@ -223,7 +221,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public AppointmentDto getAppointmentById(String appointmentId) throws CustomException {
-        try{
+        try {
             log.info("inside getAppointmentById method in DoctorAppointmentServiceImplementation");
             Optional<AppointmentEntity> appointmentOptional = doctorAppointmentRepository.findById(Long.parseLong(appointmentId));
             if (appointmentOptional.isEmpty()) {
@@ -248,7 +246,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public AppointmentDto getAppointmentByPatientId(String patientId) throws CustomException {
-        try{
+        try {
             log.info("inside getAppointmentByPatientId method in DoctorAppointmentServiceImplementation");
             Optional<AppointmentEntity> appointmentOptional = doctorAppointmentRepository.findByPatientId(patientId);
             if (appointmentOptional.isEmpty() || !appointmentOptional.get().getIsActive()) {
@@ -268,7 +266,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public List<AppointmentDto> getAppointmentByDoctorId(String doctorId) throws CustomException {
-        try{
+        try {
             log.info("inside getAppointmentByDoctorId method in DoctorAppointmentServiceImplementation");
             List<AppointmentEntity> appointments = doctorAppointmentRepository.findAllByDoctorId(doctorId);
             if (appointments.isEmpty()) {
@@ -292,7 +290,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public List<AppointmentDto> getAppointmentByDoctorIdAndDate(String doctorId, String date) throws CustomException {
-        try{
+        try {
             log.info("inside getAppointmentByDoctorIdAndDate method in DoctorAppointmentServiceImplementation");
             List<AppointmentEntity> appointments = doctorAppointmentRepository.findAllByDoctorIdAndDate(doctorId, LocalDate.parse(date));
             if (appointments.isEmpty()) {
@@ -316,7 +314,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public List<AppointmentDto> getBookedAppointmentByDoctorId(String doctorId) throws CustomException {
-        try{
+        try {
             log.info("inside getBookedAppointmentByDoctorId method in DoctorAppointmentServiceImplementation");
             List<AppointmentEntity> appointments = doctorAppointmentRepository.findAllByDoctorId(doctorId);
             if (appointments.isEmpty()) {
@@ -368,7 +366,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public List<DoctorAvailabilityDto> getDoctorAvailibilityByDoctorIdAndDate(String doctorId, String date) throws CustomException {
-        try{
+        try {
             log.info("inside getDoctorAvailibilityByDoctorIdAndDate method in DoctorAppointmentServiceImplementation");
             List<DoctorAvailabilityEntity> availabilitySlots = doctorAvailabilityRepository.findByDoctorIdAndDate(doctorId, LocalDate.parse(date));
             if (availabilitySlots.isEmpty() || availabilitySlots.stream().noneMatch(DoctorAvailabilityEntity::getIsAvailable)) {
@@ -378,7 +376,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
             List<DoctorAvailabilityDto> availabilityDtos = new ArrayList<>();
             for (DoctorAvailabilityEntity slot : availabilitySlots) {
-                if(slot.getIsAvailable())
+                if (slot.getIsAvailable())
                     availabilityDtos.add(modelMapper.map(slot, DoctorAvailabilityDto.class));
             }
             return availabilityDtos;
@@ -393,7 +391,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public void deleteDoctorAvailabilitySlot(Long doctorAvailabilityId) throws CustomException {
-        try{
+        try {
             log.info("inside deleteDoctorAvailabilitySlot method in DoctorAppointmentServiceImplementation");
             Optional<DoctorAvailabilityEntity> appointmentSlotOptional = doctorAvailabilityRepository.findById(doctorAvailabilityId);
             if (appointmentSlotOptional.isEmpty()) {
@@ -416,7 +414,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public List<AppointmentAllDataDto> getPatientsBookedAppointment(String patientId) throws CustomException {
-        try{
+        try {
             log.info("inside getPatientsBookedAppointment method in DoctorAppointmentServiceImplementation");
             List<AppointmentEntity> appointments = doctorAppointmentRepository.findAllByPatientId(patientId);
             if (appointments.isEmpty()) {
@@ -484,7 +482,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public List<AppointmentDto> patientUpcomingAppointments(String patientId) throws CustomException {
-        try{
+        try {
             log.info("inside patientUpcomingAppointments method in DoctorAppointmentServiceImplementation");
             List<AppointmentEntity> appointments = doctorAppointmentRepository.findAllByPatientId(patientId);
             if (appointments.isEmpty()) {
@@ -544,7 +542,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public List<AppointmentDto> doctorAllAppointments(String doctorId) throws CustomException {
-        try{
+        try {
             log.info("inside doctorAllAppointments method in DoctorAppointmentServiceImplementation");
             List<AppointmentEntity> appointments = doctorAppointmentRepository.findAllByDoctorId(doctorId);
             if (appointments.isEmpty()) {
@@ -561,6 +559,30 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
             }
 
             return appointmentDtos;
+        } catch (CustomException ex) {
+            log.error("Error occurred while getting appointment: {}", ex.getMessage());
+            throw ex;
+        } catch (Exception ex) {
+            log.error("An unexpected error occurred while getting appointment: {}", ex.getMessage());
+            throw new CustomException(new ResponseMessageDto("Unexpected error occurred while getting appointment", HttpStatus.INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Override
+    public List<DoctorAvailabilityDto> getAllAvailabilityAppointment() throws CustomException {
+
+        try {
+
+            log.info("inside getAllAvailabilityAppointment method in DoctorAppointmentServiceImplementation");
+            ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
+
+            List<DoctorAvailabilityEntity> appointments = doctorAvailabilityRepository.getAvailableAppointments(LocalDate.now(vnZone), LocalTime.now(vnZone));
+
+            if (appointments.isEmpty()) {
+                throw new CustomException(new ResponseMessageDto("Doctor Availability not found", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+            }
+
+            return appointments.stream().map(entity -> modelMapper.map(entity, DoctorAvailabilityDto.class)).toList();
         } catch (CustomException ex) {
             log.error("Error occurred while getting appointment: {}", ex.getMessage());
             throw ex;
@@ -589,7 +611,6 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
             return overlaps;
         });
     }
-
 
 
 }
