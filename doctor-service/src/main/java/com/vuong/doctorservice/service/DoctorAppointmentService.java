@@ -2,6 +2,7 @@ package com.vuong.doctorservice.service;
 
 
 import com.vuong.doctorservice.dto.*;
+import com.vuong.doctorservice.entitiy.DoctorAvailabilityEntity;
 import com.vuong.doctorservice.exception.CustomException;
 
 import java.util.List;
@@ -26,4 +27,6 @@ public interface DoctorAppointmentService {
     List<AppointmentDto> patientUpcomingAppointments(String patientId) throws CustomException;
     List<AppointmentDto> todayAppointments(String doctorId) throws CustomException;
     List<AppointmentDto> doctorAllAppointments(String doctorId) throws CustomException;
+
+    List<DoctorAvailabilityDto> getAllAvailabilityAppointment() throws CustomException;
 }
