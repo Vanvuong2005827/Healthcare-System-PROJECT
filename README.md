@@ -95,6 +95,7 @@ The **HealthBot** is an AI-powered chatbot for healthcare guidance, built with *
 - **Microservices**  
 - **HealthBot Workflow**  
 - **Database Schema**  
+<img width="2250" height="1809" alt="Untitled Diagram-global-architecture drawio" src="https://github.com/user-attachments/assets/7ed0c27a-ee29-4146-8692-f142db0db937" />
 
 ---
 
