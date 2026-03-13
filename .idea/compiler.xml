@@ -31,14 +31,14 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="analytic-research-service" options="-parameters" />
-      <module name="api-gateway" options="-parameters" />
-      <module name="cdss-service" options="-parameters" />
+      <module name="analytic-research-service" options="-parameters -parameters" />
+      <module name="api-gateway" options="-parameters -parameters" />
+      <module name="cdss-service" options="-parameters -parameters" />
       <module name="community-portal-service" options="-parameters" />
       <module name="config-server" options="-parameters" />
       <module name="doctor-service" options="-parameters" />
       <module name="eureka-service-discovery" options="-parameters" />
-      <module name="notification-service" options="-parameters" />
+      <module name="notification-service" options="-parameters -parameters" />
       <module name="patient-service" options="-parameters" />
       <module name="pharmaceutical-inventory-service" options="-parameters" />
       <module name="security-service" options="-parameters" />
