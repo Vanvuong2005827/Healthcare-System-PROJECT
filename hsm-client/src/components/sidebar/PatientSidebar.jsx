@@ -1,0 +1,193 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
+import LogoutIcon from "@mui/icons-material/Logout";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import LocalPharmacyIcon from "@mui/icons-material/LocalPharmacy"; // Import for Pharmacy Icon
+import FavoriteIcon from "@mui/icons-material/Favorite"; // Import for Health Icon
+import AccountCircleIcon from "@mui/icons-material/AccountCircle"; // Import for Profile Icon
+import ForumIcon from "@mui/icons-material/Forum";
+import ChatIcon from "@mui/icons-material/Chat"; // Import for Chat Icon
+import { useNavigate } from "react-router-dom";
+const Sidebar = () => {
+  const navigate = useNavigate();
+  const [doctorSubmenuOpen, setDoctorSubmenuOpen] = useState(false);
+  const [pharmacySubmenuOpen, setPharmacySubmenuOpen] = useState(false);
+  const [notificationSubmenuOpen, setNotificationSubmenuOpen] = useState(false);
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/login");
+  };
+
+  return (
+    <div className="flex flex-col w-56 h-screen border-r border-gray-200 bg-white">
+      <div className="flex items-center justify-center h-12">
+        <span className="text-xl font-bold text-purple-600">HMS</span>
+      </div>
+      <hr />
+      <div className="flex-grow overflow-auto">
+        <ul className="p-2">
+          {/* Main Options */}
+          <li className="flex items-center p-2 hover:bg-blue-600 bg-blue-500 cursor-pointer mb-2">
+            <DashboardIcon className="text-white" />
+            <Link
+              to="/patient/home"
+              className="ml-4 text-base font-semibold text-white"
+            >
+              Dashboard
+            </Link>
+          </li>
+
+          {/* Profile Section */}
+          <li className="flex items-center p-2 hover:bg-blue-600 bg-blue-500 cursor-pointer mb-2">
+            <AccountCircleIcon className="text-white" />
+            <Link
+              to="/patient/profile"
+              className="ml-4 text-base font-semibold text-white"
+            >
+              My Profile
+            </Link>
+          </li>
+          {/* Patient Section */}
+          {/* ... Dashboard, Patients ... */}
+          {/* Doctor Section */}
+          <li className="mb-2">
+            <div
+              className="flex items-center p-2 hover:bg-blue-600 bg-blue-500 cursor-pointer"
+              onClick={() => setDoctorSubmenuOpen(!doctorSubmenuOpen)}
+            >
+              <MedicalServicesIcon className="text-white" />
+              <span className="flex-grow ml-4 text-base font-semibold text-white">
+                Doctors
+              </span>
+              {doctorSubmenuOpen ? (
+                <ExpandLessIcon className="text-white" />
+              ) : (
+                <ExpandMoreIcon className="text-white" />
+              )}
+            </div>
+            {doctorSubmenuOpen && (
+              <ul className="mt-0">
+                <li className="py-1 text-base font-semibold hover:bg-gray-100 border border-gray-200 pl-10">
+                  <Link to="/patient/doctor/all" className="text-black">
+                    Doctor List
+                  </Link>
+                </li>
+                {/* <li className="py-1 text-base font-semibold hover:bg-gray-100 border border-gray-200 pl-10">
+                  <Link to="/doctor/appointment/getall" className="text-black">
+                    Available Appointments
+                  </Link>
+                </li> */}
+                {/* <li className="py-1 text-base font-semibold hover:bg-gray-100 border border-gray-200 pl-10">
+                  <Link
+                    to="/doctor/appointment/booked/getall"
+                    className="text-black"
+                  >
+                    Booked Appointments
+                  </Link>
+                </li> */}
+              </ul>
+            )}
+          </li>
+          {/* Health Recommendation Section */}
+          <li className="flex items-center p-2 hover:bg-green-600 bg-green-500 cursor-pointer mb-2">
+            <FavoriteIcon className="text-white" />
+            <Link
+              to="/patient/health-recommendation"
+              className="ml-4 text-base font-semibold text-white"
+            >
+              Health Recommendation
+            </Link>
+          </li>
+          {/* Health Support Chat Section */}
+          <li className="flex items-center p-2 hover:bg-purple-600 bg-purple-500 cursor-pointer mb-2">
+            <ChatIcon className="text-white" />
+            <Link
+              to="/patient/health-support-chat"
+              className="ml-4 text-base font-semibold text-white"
+            >
+              AI Health Support
+            </Link>
+          </li>
+          {/* Pharmacy Section */}
+          <li className="mb-2">
+            <div
+              className="flex items-center p-2 hover:bg-blue-600 bg-blue-500 cursor-pointer"
+              onClick={() => setPharmacySubmenuOpen(!pharmacySubmenuOpen)}
+            >
+              <LocalPharmacyIcon className="text-white" />
+              <span className="flex-grow ml-4 text-base font-semibold text-white">
+                Appointments
+              </span>
+              {pharmacySubmenuOpen ? (
+                <ExpandLessIcon className="text-white" />
+              ) : (
+                <ExpandMoreIcon className="text-white" />
+              )}
+            </div>
+            {pharmacySubmenuOpen && (
+              <ul className="mt-0">
+                <li className="py-1 text-base font-semibold hover:bg-gray-100 border border-gray-200 pl-10">
+                  <Link
+                    to="/patient/appointment/available"
+                    className="text-black"
+                  >
+                    Available Appointments
+                  </Link>
+                </li>
+                <li className="py-1 text-base font-semibold hover:bg-gray-100 border border-gray-200 pl-10">
+                  <Link to="/patient/appointment/all" className="text-black">
+                    Booked Appointments
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+          {/* Community Section */}
+          <li className="mb-2">
+            <div
+              className="flex items-center p-2 hover:bg-blue-600 bg-blue-500 cursor-pointer"
+              onClick={() =>
+                setNotificationSubmenuOpen(!notificationSubmenuOpen)
+              }
+            >
+              <ForumIcon className="text-white" />
+              <span className="flex-grow ml-4 text-base font-semibold text-white">
+                Community
+              </span>
+              {notificationSubmenuOpen ? (
+                <ExpandLessIcon className="text-white" />
+              ) : (
+                <ExpandMoreIcon className="text-white" />
+              )}
+            </div>
+            {notificationSubmenuOpen && (
+              <ul className="mt-0">
+                <li className="py-1 text-base font-semibold hover:bg-gray-100 border border-gray-200 pl-10">
+                  <Link to="/patient/community" className="text-black">
+                    HMS Community
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+          {/* ... Add more sections as needed ... */}
+          <li
+            className="flex items-center p-2 hover:bg-blue-600 bg-blue-500 cursor-pointer mb-2"
+            onClick={handleLogout} // Add onClick handler for logout
+          >
+            <LogoutIcon className="text-white" />
+            <span className="ml-4 text-base font-semibold text-white">
+              Logout
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+export default Sidebar;

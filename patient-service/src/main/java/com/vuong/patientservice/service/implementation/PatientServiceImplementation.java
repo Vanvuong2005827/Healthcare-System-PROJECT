@@ -1,6 +1,5 @@
 package com.vuong.patientservice.service.implementation;
 
-
 import com.vuong.patientservice.dto.*;
 import com.vuong.patientservice.entity.PatientEntity;
 import com.vuong.patientservice.enums.Role;
@@ -41,10 +40,13 @@ public class PatientServiceImplementation implements PatientService {
             userRegistrationRequestDto.setActive(true);
 
             log.info("Sending request to security service for patient registration");
-            ResponseEntity<UserRegistrationResponseDto> response = securityServiceFeignClient.register(userRegistrationRequestDto);
+            ResponseEntity<UserRegistrationResponseDto> response = securityServiceFeignClient
+                    .register(userRegistrationRequestDto);
 
             if (response.getStatusCode() != HttpStatus.CREATED || response.getBody() == null) {
-                throw new CustomException(new ResponseMessageDto("Registration failed at security service", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+                throw new CustomException(
+                        new ResponseMessageDto("Registration failed at security service", HttpStatus.BAD_REQUEST),
+                        HttpStatus.BAD_REQUEST);
             }
 
             PatientEntity patientEntity = modelMapper.map(registrationDto, PatientEntity.class);
@@ -67,8 +69,9 @@ public class PatientServiceImplementation implements PatientService {
     public PatientDto getPatientById(String patientId)
             throws CustomException {
         Optional<PatientEntity> patientEntity = patientRepository.findById(patientId);
-        if(patientEntity.isEmpty() || !patientEntity.get().isActive()){
-            throw new CustomException(new ResponseMessageDto("Patient not found", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+        if (patientEntity.isEmpty() || !patientEntity.get().isActive()) {
+            throw new CustomException(new ResponseMessageDto("Patient not found", HttpStatus.NOT_FOUND),
+                    HttpStatus.NOT_FOUND);
         }
         log.info("Patient found with ID: {}", patientId);
         return modelMapper.map(patientEntity.get(), PatientDto.class);
@@ -78,8 +81,9 @@ public class PatientServiceImplementation implements PatientService {
     public PatientDto getPatientByEmail(String email)
             throws CustomException {
         Optional<PatientEntity> patientEntity = patientRepository.findByEmail(email);
-        if(patientEntity.isEmpty() || !patientEntity.get().isActive()){
-            throw new CustomException(new ResponseMessageDto("Patient not found", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+        if (patientEntity.isEmpty() || !patientEntity.get().isActive()) {
+            throw new CustomException(new ResponseMessageDto("Patient not found", HttpStatus.NOT_FOUND),
+                    HttpStatus.NOT_FOUND);
         }
         log.info("Patient found with email: {}", email);
         return modelMapper.map(patientEntity.get(), PatientDto.class);
@@ -90,7 +94,8 @@ public class PatientServiceImplementation implements PatientService {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null || !authentication.isAuthenticated()) {
-                throw new CustomException(new ResponseMessageDto("You are not authorized to access this resource", HttpStatus.UNAUTHORIZED), HttpStatus.UNAUTHORIZED);
+                throw new CustomException(new ResponseMessageDto("You are not authorized to access this resource",
+                        HttpStatus.UNAUTHORIZED), HttpStatus.UNAUTHORIZED);
             }
 
             String email = authentication.getName();
@@ -99,10 +104,13 @@ public class PatientServiceImplementation implements PatientService {
             Optional<PatientEntity> patientEntity = patientRepository.findByEmail(email);
 
             return patientEntity.map(entity -> modelMapper.map(entity, PatientDto.class))
-                    .orElseThrow(() -> new CustomException(new ResponseMessageDto("Token is invalid", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST));
+                    .orElseThrow(() -> new CustomException(
+                            new ResponseMessageDto("Error in using model mapper", HttpStatus.BAD_REQUEST),
+                            HttpStatus.BAD_REQUEST));
         } catch (Exception ex) {
             log.error("Error occurred while getting current patient: {}", ex.getMessage());
-            throw new CustomException(new ResponseMessageDto("Token is invalid", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            throw new CustomException(new ResponseMessageDto("Token is invalid", HttpStatus.BAD_REQUEST),
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -111,66 +119,79 @@ public class PatientServiceImplementation implements PatientService {
             throws CustomException {
         Optional<PatientEntity> patientEntityOptional = patientRepository.findById(patientDto.getPatientId());
         if (patientEntityOptional.isEmpty() || !patientEntityOptional.get().isActive()) {
-            throw new CustomException(new ResponseMessageDto("Patient not found", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+            throw new CustomException(new ResponseMessageDto("Patient not found", HttpStatus.NOT_FOUND),
+                    HttpStatus.NOT_FOUND);
         }
         log.info("Patient found with ID: {}", patientDto.getPatientId());
 
         PatientEntity patientEntity = patientEntityOptional.get();
-        patientEntity.setFirstName(patientDto.getFirstName() != null ? patientDto.getFirstName() : patientEntity.getFirstName());
-        patientEntity.setLastName(patientDto.getLastName() != null ? patientDto.getLastName() : patientEntity.getLastName());
-        patientEntity.setDateOfBirth(patientDto.getDateOfBirth() != null ? patientDto.getDateOfBirth() : patientEntity.getDateOfBirth());
+        patientEntity.setFirstName(
+                patientDto.getFirstName() != null ? patientDto.getFirstName() : patientEntity.getFirstName());
+        patientEntity
+                .setLastName(patientDto.getLastName() != null ? patientDto.getLastName() : patientEntity.getLastName());
+        patientEntity.setDateOfBirth(
+                patientDto.getDateOfBirth() != null ? patientDto.getDateOfBirth() : patientEntity.getDateOfBirth());
         patientEntity.setGender(patientDto.getGender() != null ? patientDto.getGender() : patientEntity.getGender());
-        patientEntity.setBloodGroup(patientDto.getBloodGroup() != null ? patientDto.getBloodGroup() : patientEntity.getBloodGroup());
-        patientEntity.setPhoneNumber(patientDto.getPhoneNumber() != null ? patientDto.getPhoneNumber() : patientEntity.getPhoneNumber());
-        patientEntity.setAddress(patientDto.getAddress() != null ? patientDto.getAddress() : patientEntity.getAddress());
+        patientEntity.setBloodGroup(
+                patientDto.getBloodGroup() != null ? patientDto.getBloodGroup() : patientEntity.getBloodGroup());
+        patientEntity.setPhoneNumber(
+                patientDto.getPhoneNumber() != null ? patientDto.getPhoneNumber() : patientEntity.getPhoneNumber());
+        patientEntity
+                .setAddress(patientDto.getAddress() != null ? patientDto.getAddress() : patientEntity.getAddress());
 
         patientRepository.save(patientEntity);
     }
 
     @Override
     public List<PatientDto> getAllPatients() throws CustomException {
-        try{
+        try {
             List<PatientEntity> patientEntities = patientRepository.findAll();
             return patientEntities.stream().map(entity -> modelMapper.map(entity, PatientDto.class)).toList();
         } catch (Exception ex) {
             log.error("Error occurred while getting all patients: {}", ex.getMessage());
-            throw new CustomException(new ResponseMessageDto("Error occurred while getting all patients", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            throw new CustomException(
+                    new ResponseMessageDto("Error occurred while getting all patients", HttpStatus.BAD_REQUEST),
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
     @Override
     public List<PatientDto> getAllApprovedPatients() throws CustomException {
-        try{
+        try {
             List<PatientEntity> patientEntities = patientRepository.findAllByApproved(true);
             return patientEntities.stream().map(entity -> modelMapper.map(entity, PatientDto.class)).toList();
         } catch (Exception ex) {
             log.error("Error occurred while getting all approved patients: {}", ex.getMessage());
-            throw new CustomException(new ResponseMessageDto("Error occurred while getting all approved patients", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            throw new CustomException(new ResponseMessageDto("Error occurred while getting all approved patients",
+                    HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
         }
     }
 
     @Override
     public List<PatientDto> getAllUnapprovedPatients() throws CustomException {
-        try{
+        try {
             List<PatientEntity> patientEntities = patientRepository.findAllByApproved(false);
             return patientEntities.stream().map(entity -> modelMapper.map(entity, PatientDto.class)).toList();
         } catch (Exception ex) {
             log.error("Error occurred while getting all unapproved patients: {}", ex.getMessage());
-            throw new CustomException(new ResponseMessageDto("Error occurred while getting all unapproved patients", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            throw new CustomException(new ResponseMessageDto("Error occurred while getting all unapproved patients",
+                    HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
         }
     }
 
     @Override
     public void approvePatient(String patientId) throws CustomException {
-        try{
+        try {
             Optional<PatientEntity> patientEntityOptional = patientRepository.findById(patientId);
             if (patientEntityOptional.isEmpty() || !patientEntityOptional.get().isActive()) {
-                throw new CustomException(new ResponseMessageDto("Patient not found", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new CustomException(new ResponseMessageDto("Patient not found", HttpStatus.NOT_FOUND),
+                        HttpStatus.NOT_FOUND);
             }
             log.info("Patient found with ID: {}", patientId);
 
             if (patientEntityOptional.get().isApproved()) {
-                throw new CustomException(new ResponseMessageDto("Patient is already approved", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+                throw new CustomException(new ResponseMessageDto("Patient is already approved", HttpStatus.BAD_REQUEST),
+                        HttpStatus.BAD_REQUEST);
             }
 
             PatientEntity patientEntity = patientEntityOptional.get();
@@ -179,44 +200,54 @@ public class PatientServiceImplementation implements PatientService {
             patientRepository.save(patientEntity);
         } catch (Exception ex) {
             log.error("Error occurred while approving patient: {}", ex.getMessage());
-            throw new CustomException(new ResponseMessageDto("Error occurred while approving patient", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            throw new CustomException(
+                    new ResponseMessageDto("Error occurred while approving patient", HttpStatus.BAD_REQUEST),
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
     @Override
     public PatientDto getPatientByUserId(Long userId) throws CustomException {
-        try{
+        try {
             Optional<PatientEntity> patientEntityOptional = patientRepository.findByUserId(userId);
             if (patientEntityOptional.isEmpty() || !patientEntityOptional.get().isActive()) {
-                throw new CustomException(new ResponseMessageDto("Patient not found", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
+                throw new CustomException(new ResponseMessageDto("Patient not found", HttpStatus.NOT_FOUND),
+                        HttpStatus.NOT_FOUND);
             }
             log.info("Patient found with ID: {}", patientEntityOptional.get().getPatientId());
 
             return modelMapper.map(patientEntityOptional.get(), PatientDto.class);
         } catch (Exception ex) {
             log.error("Error occurred while getting patient by user ID: {}", ex.getMessage());
-            throw new CustomException(new ResponseMessageDto("Error occurred while getting patient by user ID", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            throw new CustomException(
+                    new ResponseMessageDto("Error occurred while getting patient by user ID", HttpStatus.BAD_REQUEST),
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
     @Override
     public Long countTotalPatients() throws CustomException {
-        try{
+        try {
             return patientRepository.count();
         } catch (Exception ex) {
             log.error("Error occurred while counting total patients: {}", ex.getMessage());
-            throw new CustomException(new ResponseMessageDto("Error occurred while counting total patients", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            throw new CustomException(
+                    new ResponseMessageDto("Error occurred while counting total patients", HttpStatus.BAD_REQUEST),
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
     @Override
     public List<PatientDto> searchPatientByName(String name) throws CustomException {
-        try{
-            List<PatientEntity> patientEntities = patientRepository.searchByFirstNameOrLastNameContainingIgnoreCase(name);
+        try {
+            List<PatientEntity> patientEntities = patientRepository
+                    .searchByFirstNameOrLastNameContainingIgnoreCase(name);
             return patientEntities.stream().map(entity -> modelMapper.map(entity, PatientDto.class)).toList();
         } catch (Exception ex) {
             log.error("Error occurred while searching patient by name: {}", ex.getMessage());
-            throw new CustomException(new ResponseMessageDto("Error occurred while searching patient by name", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            throw new CustomException(
+                    new ResponseMessageDto("Error occurred while searching patient by name", HttpStatus.BAD_REQUEST),
+                    HttpStatus.BAD_REQUEST);
         }
     }
 
