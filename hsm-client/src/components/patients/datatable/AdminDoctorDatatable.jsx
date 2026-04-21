@@ -123,9 +123,17 @@ const AdminDoctorDatatable = () => {
     //   <div className="flex">
     //     <Sidebar />
     <div className="flex-grow p-4">
-      <h1 className="text-2xl font-semibold text-gray-700 mb-4">
-        Doctors List
-      </h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-semibold text-gray-700">
+          Doctors List
+        </h1>
+        <Link
+          to="/admin/doctor/add"
+          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded no-underline"
+        >
+          + Add Doctor
+        </Link>
+      </div>
       <div className="bg-white shadow-md rounded-md overflow-hidden">
         <DataGrid
           rows={doctorsList}

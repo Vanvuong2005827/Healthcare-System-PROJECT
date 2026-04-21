@@ -1,7 +1,9 @@
-package com.vuong.notificationservice.constants;
+﻿package com.vuong.notificationservice.constants;
 
 public class AppConstants {
-    public static final String TOKEN_SECRET = "9eac628c872d1fb3d806a82e95df1841d70e18dc96b664bff865d0bbe3e55ec1595b2f1672cf947c86541b22daef211021831091b8b5b6a4f2561f6e2e319bdb";
+    public static final String TOKEN_SECRET = System.getenv("JWT_TOKEN_SECRET") != null
+            ? System.getenv("JWT_TOKEN_SECRET")
+            : "9eac628c872d1fb3d806a82e95df1841d70e18dc96b664bff865d0bbe3e55ec1595b2f1672cf947c86541b22daef211021831091b8b5b6a4f2561f6e2e319bdb";
     public static final long EXPIRATION_TIME = 864000000; //10 days
 
     public static final String SIGN_IN = "/users/login";

@@ -5,11 +5,12 @@ import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import LocalPharmacyIcon from "@mui/icons-material/LocalPharmacy"; // Import for Pharmacy Icon
-import FavoriteIcon from "@mui/icons-material/Favorite"; // Import for Health Icon
-import AccountCircleIcon from "@mui/icons-material/AccountCircle"; // Import for Profile Icon
+import LocalPharmacyIcon from "@mui/icons-material/LocalPharmacy";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ForumIcon from "@mui/icons-material/Forum";
-import ChatIcon from "@mui/icons-material/Chat"; // Import for Chat Icon
+import ChatIcon from "@mui/icons-material/Chat";
+import ArticleIcon from "@mui/icons-material/Article";
 import { useNavigate } from "react-router-dom";
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -174,6 +175,18 @@ const Sidebar = () => {
               </ul>
             )}
           </li>
+
+          {/* Doctor Articles Section */}
+          <li className="flex items-center p-2 hover:bg-indigo-600 bg-indigo-500 cursor-pointer mb-2">
+            <ArticleIcon className="text-white" />
+            <Link
+              to="/patient/articles"
+              className="ml-4 text-base font-semibold text-white"
+            >
+              Doctor Articles
+            </Link>
+          </li>
+
           {/* ... Add more sections as needed ... */}
           <li
             className="flex items-center p-2 hover:bg-blue-600 bg-blue-500 cursor-pointer mb-2"

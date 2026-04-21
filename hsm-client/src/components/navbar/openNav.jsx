@@ -23,13 +23,7 @@ const OpenNavbar = () => {
           to="/patient/register"
           className="text-gray-700 hover:text-gray-900"
         >
-          Patient Registration
-        </Link>
-        <Link
-          to="/doctor/register"
-          className="text-gray-700 hover:text-gray-900"
-        >
-          Doctor Registration
+          Register
         </Link>
       </div>
     </div>

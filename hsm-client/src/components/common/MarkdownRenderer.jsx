@@ -1,5 +1,7 @@
 import MDEditor from "@uiw/react-md-editor";
+import "@uiw/react-md-editor/markdown-editor.css";
 import PropTypes from "prop-types";
+import "../../styles/markdown-editor.css";
 
 const MarkdownRenderer = ({ content, className = "" }) => {
   return (

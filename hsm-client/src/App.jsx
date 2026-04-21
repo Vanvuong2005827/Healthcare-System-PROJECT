@@ -7,7 +7,7 @@ import New from "./pages/new/New";
 import { ToastContainer, Zoom } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { LanguageProvider } from "./contexts/LanguageContext";
-import PatientRegistration from "./pages/register-patient/patientRegister";
+
 import AppointmentSlotsPage from "./pages/doctor-appointment-pages/appointmentSlotsPage";
 import AppointmentCreate from "./pages/doctor-appointment-pages/appointmentCreate";
 import AppointmentBooked from "./pages/doctor-appointment-pages/appointmentBooked";
@@ -20,7 +20,7 @@ import HMSCommunityFull from "./components/community/HMSCommunityFull";
 import PostDetail from "./components/community/PostDetail";
 import PatientHomePage from "./pages/home/PatientHomePage";
 import DoctorHomePage from "./pages/home/DoctorHomePage";
-import DoctorRegistration from "./pages/register-patient/doctorRegister";
+import AdminAddDoctor from "./pages/list/AdminAddDoctor";
 import Authenticate from "./Authenticate";
 import DoctorPatientsList from "./pages/list/doctorPatientList";
 import DoctorPatientSingle from "./pages/single/DoctorPatientSingle";
@@ -38,6 +38,12 @@ import DoctorRecommendationPage from "./pages/health-recommendation/DoctorRecomm
 import CreateRecommendationPage from "./pages/health-recommendation/CreateRecommendationPage";
 import EditRecommendationPage from "./pages/health-recommendation/EditRecommendationPage";
 import RoomManagement from "./pages/room-management/RoomManagement";
+import DoctorArticlesPage from "./pages/articles/DoctorArticlesPage";
+import CreateArticlePage from "./pages/articles/CreateArticlePage";
+import EditArticlePage from "./pages/articles/EditArticlePage";
+import PatientArticlesPage from "./pages/articles/PatientArticlesPage";
+import ArticleDetailPage from "./pages/articles/ArticleDetailPage";
+import BookmarkedArticlesPage from "./pages/articles/BookmarkedArticlesPage";
 import PatientProfilePage from "./pages/patient-profile/PatientProfilePage";
 import DoctorProfilePage from "./pages/doctor-profile/DoctorProfilePage";
 import ChangePasswordPage from "./pages/login/ChangePasswordPage";
@@ -58,11 +64,8 @@ function App() {
               />
               <Route path="login" element={<Login />} />
               <Route path="ChangePassword" element={<ChangePasswordPage />} />
-              <Route
-                path="patient/register"
-                element={<PatientRegistration />}
-              />
-              <Route path="doctor/register" element={<DoctorRegistration />} />
+              <Route path="patient/register" element={<Login />} />
+
               <Route
                 path="researcher/register"
                 element={<ResearcherRegistration />}
@@ -112,6 +115,16 @@ function App() {
                   />
                   <Route path="doctor/list" element={<List />} />
                   <Route path="doctor/:doctorId" element={<Single />} />
+                  {/* Patient Articles Routes */}
+                  <Route path="articles" element={<PatientArticlesPage />} />
+                  <Route
+                    path="articles/bookmarks"
+                    element={<BookmarkedArticlesPage />}
+                  />
+                  <Route
+                    path="articles/:articleId"
+                    element={<ArticleDetailPage />}
+                  />
                 </Route>
               </Route>
 
@@ -151,6 +164,20 @@ function App() {
                     path="health-recommendation/edit/:id"
                     element={<EditRecommendationPage />}
                   />
+                  {/* Doctor Articles Routes */}
+                  <Route path="articles" element={<DoctorArticlesPage />} />
+                  <Route
+                    path="articles/:articleId"
+                    element={<ArticleDetailPage />}
+                  />
+                  <Route
+                    path="articles/create"
+                    element={<CreateArticlePage />}
+                  />
+                  <Route
+                    path="articles/edit/:id"
+                    element={<EditArticlePage />}
+                  />
                 </Route>
               </Route>
               <Route element={<Authenticate requiredRole={"Admin"} />}>
@@ -159,6 +186,7 @@ function App() {
                   <Route path="patient/list" element={<List />} />
                   <Route path="patient/:patientId" element={<Single />} />
                   <Route path="doctor/list" element={<AdminDoctorList />} />
+                  <Route path="doctor/add" element={<AdminAddDoctor />} />
                   <Route
                     path="doctor/:doctorId"
                     element={<AdminDoctorSingle />}

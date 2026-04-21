@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import axiosInstanceCommunityPortalService from "../../utils/axiosInstanceCommunityPortalService";
 import axiosInstancePatientService from "../../utils/axiosInstancePatientService";
@@ -8,20 +8,22 @@ import {
   FaThumbsUp,
   FaThumbsDown,
   FaComment,
-  FaFire,
   FaUser,
   FaClock,
   FaTrophy,
   FaCalendarAlt,
-  FaNewspaper,
   FaArrowRight,
   FaMedal,
   FaStar,
-  FaEye,
   FaChartLine,
+  FaPen,
+  FaLayerGroup,
+  FaRegNewspaper,
+  FaUsers,
+  FaRegClock,
+  FaChevronRight,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import "../../styles/community.css";
 import "../../styles/community-dashboard.css";
 
 const CommunityDashboard = () => {
@@ -33,13 +35,23 @@ const CommunityDashboard = () => {
   const [creatorName, setCreatorName] = useState("");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("daily");
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
+    const controller = new AbortController();
+
     const fetchData = async () => {
       setLoading(true);
       try {
-        await Promise.all([fetchCreatorName(), fetchPosts()]);
+        await Promise.all([
+          fetchCreatorName(controller.signal),
+          fetchPosts(controller.signal),
+        ]);
       } catch (error) {
+        if (error.name === "CanceledError") return;
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
@@ -47,30 +59,39 @@ const CommunityDashboard = () => {
     };
 
     fetchData();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => controller.abort();
+  }, []);
 
-  const fetchCreatorName = async () => {
+  const fetchCreatorName = async (signal) => {
     try {
-      const response = await axiosInstancePatientService.get("/profile");
+      const response = await axiosInstancePatientService.get("/profile", {
+        signal,
+      });
       setCreatorName(`${response.data.firstName} ${response.data.lastName}`);
     } catch (error) {
-      console.error("Error fetching creator's name:", error);
+      if (error.name !== "CanceledError") {
+        console.error("Error fetching creator's name:", error);
+      }
     }
   };
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (signal) => {
     try {
-      const response = await axiosInstanceCommunityPortalService.get("/posts");
+      const response = await axiosInstanceCommunityPortalService.get("/posts", {
+        signal,
+      });
       const postsWithVotesPromises = response.data.map(async (post) => {
         try {
-          const voteCountResponse =
-            await axiosInstanceCommunityPortalService.get(
-              `/posts/${post.postId}/votes/count`
-            );
-          const commentsResponse =
-            await axiosInstanceCommunityPortalService.get(
-              `/posts/${post.postId}/comments`
-            );
+          const [voteCountResponse, commentsResponse] = await Promise.all([
+            axiosInstanceCommunityPortalService.get(
+              `/posts/${post.postId}/votes/count`,
+              { signal }
+            ),
+            axiosInstanceCommunityPortalService.get(
+              `/posts/${post.postId}/comments`,
+              { signal }
+            ),
+          ]);
 
           return {
             ...post,
@@ -82,6 +103,7 @@ const CommunityDashboard = () => {
               voteCountResponse.data.downVoteCount,
           };
         } catch (error) {
+          if (error.name === "CanceledError") throw error;
           console.error(`Error fetching data for post ${post.postId}:`, error);
           return {
             ...post,
@@ -95,11 +117,11 @@ const CommunityDashboard = () => {
 
       const postsWithVotes = await Promise.all(postsWithVotesPromises);
       setPosts(postsWithVotes);
-
-      // Process posts for different categories
       processPostsForCategories(postsWithVotes);
     } catch (error) {
-      console.error("Error fetching posts:", error);
+      if (error.name !== "CanceledError") {
+        console.error("Error fetching posts:", error);
+      }
     }
   };
 
@@ -108,44 +130,34 @@ const CommunityDashboard = () => {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Filter posts by date
-    const dailyPosts = allPosts.filter((post) => {
-      const postDate = new Date(post.createdAt);
-      return postDate >= today;
-    });
+    const dailyPosts = allPosts.filter(
+      (post) => new Date(post.createdAt) >= today
+    );
+    const monthlyPosts = allPosts.filter(
+      (post) => new Date(post.createdAt) >= thisMonth
+    );
 
-    const monthlyPosts = allPosts.filter((post) => {
-      const postDate = new Date(post.createdAt);
-      return postDate >= thisMonth;
-    });
-
-    // Sort by score (upvotes - downvotes) and get top 5
-    const topDaily = dailyPosts.sort((a, b) => b.score - a.score).slice(0, 5);
-
-    const topMonthly = monthlyPosts
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 5);
-
-    // Get latest posts (sorted by creation date)
-    const latest = allPosts
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      .slice(0, 5);
-
-    setTopDailyPosts(topDaily);
-    setTopMonthlyPosts(topMonthly);
-    setLatestPosts(latest);
+    setTopDailyPosts(
+      [...dailyPosts].sort((a, b) => b.score - a.score).slice(0, 5)
+    );
+    setTopMonthlyPosts(
+      [...monthlyPosts].sort((a, b) => b.score - a.score).slice(0, 5)
+    );
+    setLatestPosts(
+      [...allPosts]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5)
+    );
   };
 
   const handleVote = async (postId, voteType) => {
     try {
-      const voteDto = {
-        postId: postId,
-        voteType: voteType,
+      await axiosInstanceCommunityPortalService.post("/posts/vote", {
+        postId,
+        voteType,
         isActive: true,
-      };
-
-      await axiosInstanceCommunityPortalService.post("/posts/vote", voteDto);
-      fetchPosts(); // Refresh data after voting
+      });
+      fetchPosts();
     } catch (error) {
       console.error("Error voting:", error);
     }
@@ -154,141 +166,138 @@ const CommunityDashboard = () => {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
 
-    if (diffInHours < 1) {
-      return "Just now";
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      if (diffInDays < 7) {
-        return `${diffInDays}d ago`;
-      } else {
-        return date.toLocaleDateString();
-      }
-    }
+    if (diffMins < 1) return "Vừa xong";
+    if (diffMins < 60) return `${diffMins} phút trước`;
+    if (diffHours < 24) return `${diffHours} giờ trước`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays} ngày trước`;
+    return date.toLocaleDateString("vi-VN");
   };
 
-  const truncateContent = (content, maxLength = 100) => {
+  const truncateContent = (content, maxLength = 120) => {
+    if (!content) return "";
     if (content.length <= maxLength) return content;
     return content.substring(0, maxLength) + "...";
   };
 
-  const PostCard = ({ post, index, showRank = false, size = "normal" }) => {
-    const isCompact = size === "compact";
+  /* ── Stats data ── */
+  const totalComments = posts.reduce(
+    (sum, p) => sum + (p.comments?.length || 0),
+    0
+  );
+  const stats = [
+    {
+      label: "Tổng bài viết",
+      value: posts.length,
+      icon: FaRegNewspaper,
+      gradient: "cd-stat--posts",
+    },
+    {
+      label: "Hôm nay",
+      value: topDailyPosts.length,
+      icon: FaCalendarAlt,
+      gradient: "cd-stat--today",
+    },
+    {
+      label: "Bình luận",
+      value: totalComments,
+      icon: FaComment,
+      gradient: "cd-stat--comments",
+    },
+    {
+      label: "Thành viên",
+      value: new Set(posts.map((p) => p.creatorId)).size || 0,
+      icon: FaUsers,
+      gradient: "cd-stat--members",
+    },
+  ];
 
-    const handleCardClick = () => {
-      navigate(`/patient/community/post/${post.postId}`);
-    };
+  /* ── Rank config ── */
+  const rankConfig = [
+    { icon: FaTrophy, cls: "cd-rank--gold" },
+    { icon: FaMedal, cls: "cd-rank--silver" },
+    { icon: FaStar, cls: "cd-rank--bronze" },
+  ];
 
-    return (
-      <div
-        className={`dashboard-card post-card-compact cursor-pointer ${
-          index === 0 && showRank
-            ? "border-yellow-400 top-post-1"
-            : index === 1 && showRank
-            ? "border-gray-400 top-post-2"
-            : index === 2 && showRank
-            ? "border-orange-400 top-post-3"
-            : "border-blue-400"
-        } ${
-          isCompact ? "p-4" : "p-6"
-        } rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4`}
-        onClick={handleCardClick}
-      >
-        {/* Rank Badge */}
-        {showRank && index < 3 && (
-          <div className="flex items-center justify-between mb-3">
-            <div
-              className={`rank-badge flex items-center gap-2 px-3 py-1 rounded-full text-sm font-bold ${
-                index === 0
-                  ? "bg-yellow-100 text-yellow-800"
-                  : index === 1
-                  ? "bg-gray-100 text-gray-800"
-                  : "bg-orange-100 text-orange-800"
-              }`}
-            >
-              {index === 0 && <FaTrophy className="w-4 h-4" />}
-              {index === 1 && <FaMedal className="w-4 h-4" />}
-              {index === 2 && <FaStar className="w-4 h-4" />}#{index + 1}
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <FaChartLine className="w-3 h-3" />
-              <span>Score: {post.score}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Post Header */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-            <FaUser className="text-white w-5 h-5" />
-          </div>
-          <div className="flex-1">
-            <h4 className="font-semibold text-gray-800">{creatorName}</h4>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <FaClock className="w-3 h-3" />
-              <span>{formatDate(post.createdAt)}</span>
-            </div>
-          </div>
+  /* ── PostCard component ── */
+  const PostCard = ({ post, index, showRank = false }) => (
+    <div
+      className={`cd-post-card ${showRank && index < 3 ? rankConfig[index]?.cls : ""}`}
+      onClick={() => navigate(`/patient/community/post/${post.postId}`)}
+    >
+      {/* Rank indicator */}
+      {showRank && index < 3 && (
+        <div className="cd-post-card__rank">
+          {(() => {
+            const RankIcon = rankConfig[index].icon;
+            return <RankIcon />;
+          })()}
+          <span>#{index + 1}</span>
         </div>
+      )}
 
-        {/* Post Content */}
-        <h3
-          className={`font-bold text-gray-900 mb-3 ${
-            isCompact ? "text-lg" : "text-xl"
-          }`}
-        >
-          {post.postTitle}
-        </h3>
+      {/* Content area */}
+      <div className="cd-post-card__body">
+        <h4 className="cd-post-card__title">{post.postTitle}</h4>
+        <p className="cd-post-card__excerpt">
+          {truncateContent(post.postContent)}
+        </p>
 
-        <div className="text-gray-600 mb-4">
-          {truncateContent(post.postContent, isCompact ? 80 : 150)}
-        </div>
-
-        {/* Post Stats */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 text-sm text-gray-500">
-            <div className="flex items-center gap-1">
-              <FaComment className="w-4 h-4" />
-              <span>{post.comments?.length || 0}</span>
+        {/* Meta row */}
+        <div className="cd-post-card__meta">
+          <div className="cd-post-card__author">
+            <div className="cd-post-card__avatar">
+              <FaUser />
             </div>
-            <div className="flex items-center gap-1">
-              <FaEye className="w-4 h-4" />
-              <span>{Math.floor(Math.random() * 100) + 50}</span>
-            </div>
+            <span>{creatorName || "Thành viên"}</span>
           </div>
-
-          {/* Vote Buttons */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleVote(post.postId, "Upvote");
-              }}
-              className="action-button vote-button-compact bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-1 text-sm"
-            >
-              <FaThumbsUp className="w-3 h-3" />
-              {post.upVoteCount || 0}
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleVote(post.postId, "Downvote");
-              }}
-              className="action-button vote-button-compact bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-3 rounded-lg transition-colors flex items-center gap-1 text-sm"
-            >
-              <FaThumbsDown className="w-3 h-3" />
-              {post.downVoteCount || 0}
-            </button>
+          <div className="cd-post-card__time">
+            <FaRegClock />
+            <span>{formatDate(post.createdAt)}</span>
           </div>
         </div>
       </div>
-    );
-  };
 
-  // PropTypes validation for PostCard
+      {/* Actions bar */}
+      <div className="cd-post-card__actions">
+        <div className="cd-post-card__stats-row">
+          <span className="cd-post-card__stat">
+            <FaComment /> {post.comments?.length || 0}
+          </span>
+          {showRank && (
+            <span className="cd-post-card__stat cd-post-card__stat--score">
+              <FaChartLine /> {post.score}
+            </span>
+          )}
+        </div>
+        <div className="cd-post-card__votes">
+          <button
+            className="cd-vote cd-vote--up"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleVote(post.postId, "Upvote");
+            }}
+          >
+            <FaThumbsUp /> {post.upVoteCount || 0}
+          </button>
+          <button
+            className="cd-vote cd-vote--down"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleVote(post.postId, "Downvote");
+            }}
+          >
+            <FaThumbsDown /> {post.downVoteCount || 0}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   PostCard.propTypes = {
     post: PropTypes.shape({
       postId: PropTypes.string.isRequired,
@@ -302,215 +311,169 @@ const CommunityDashboard = () => {
     }).isRequired,
     index: PropTypes.number,
     showRank: PropTypes.bool,
-    size: PropTypes.string,
   };
 
+  /* ── Empty state ── */
+  const EmptyState = ({ message }) => (
+    <div className="cd-empty">
+      <div className="cd-empty__icon">
+        <FaLayerGroup />
+      </div>
+      <p className="cd-empty__text">{message}</p>
+      <Link to="/patient/community/create" className="cd-empty__cta">
+        <FaPen /> Viết bài đầu tiên
+      </Link>
+    </div>
+  );
+
+  EmptyState.propTypes = {
+    message: PropTypes.string.isRequired,
+  };
+
+  /* ── Loading skeleton ── */
   if (loading) {
     return (
       <div className="flex">
         <Sidebar />
         <div className="flex-1 p-4">
           <Navbar />
-          <div className="container mx-auto p-4 bg-white min-h-screen flex items-center justify-center">
-            <div className="text-center">
-              <div className="loading-spinner mx-auto mb-4"></div>
-              <p className="text-gray-600 text-lg">
-                Đang tải dữ liệu cộng đồng...
-              </p>
-              <p className="text-gray-500 text-sm mt-2">
-                Vui lòng chờ trong giây lát
-              </p>
-            </div>
+          <div className="cd-loading">
+            <div className="cd-loading__spinner" />
+            <p className="cd-loading__text">Đang tải cộng đồng...</p>
           </div>
         </div>
       </div>
     );
   }
 
+  /* ── Main render ── */
   return (
     <div className="flex">
       <Sidebar />
       <div className="flex-1 p-4">
         <Navbar />
-        <div className="container mx-auto p-4 bg-white min-h-screen">
-          {/* Header */}
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold mb-2 text-gray-800 flex items-center justify-center gap-3">
-              <FaFire className="text-orange-500" />
-              HMS Community Dashboard
-            </h1>
-            <p className="text-gray-600">
-              Khám phá những bài viết hot nhất và mới nhất trong cộng đồng
-            </p>
-          </div>
 
-          {/* Quick Actions */}
-          <div className="mb-8 flex justify-center gap-4">
-            <Link
-              to="/patient/community/create"
-              className="action-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center gap-2"
-            >
-              <FaNewspaper className="w-4 h-4" />
-              Tạo bài viết mới
-            </Link>
-            <Link
-              to="/patient/community/all"
-              className="action-button bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center gap-2"
-            >
-              <FaEye className="w-4 h-4" />
-              Xem tất cả bài viết
-            </Link>
-          </div>
+        <div className="cd-wrapper">
+          {/* ─── Hero banner ─── */}
+          <section className="cd-hero">
+            <div className="cd-hero__decor cd-hero__decor--1" />
+            <div className="cd-hero__decor cd-hero__decor--2" />
+            <div className="cd-hero__decor cd-hero__decor--3" />
 
-          {/* Top Posts Section */}
-          <div className="mb-8">
-            <div className="dashboard-card bg-white rounded-xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                  <FaTrophy className="text-yellow-500" />
-                  Bài viết được đánh giá cao nhất
-                </h2>
+            <div className="cd-hero__content">
+              <p className="cd-hero__label">Community</p>
+              <h1 className="cd-hero__title">
+                Cộng đồng HMS
+              </h1>
+              <p className="cd-hero__subtitle">
+                Chia sẻ kinh nghiệm, thảo luận và kết nối với cộng đồng sức
+                khỏe HMS
+              </p>
+              <div className="cd-hero__actions">
+                <Link to="/patient/community/create" className="cd-btn cd-btn--primary">
+                  <FaPen /> Viết bài mới
+                </Link>
+                <Link to="/patient/community/all" className="cd-btn cd-btn--ghost">
+                  <FaLayerGroup /> Tất cả bài viết
+                </Link>
+              </div>
+            </div>
+          </section>
 
-                {/* Tab Switcher */}
-                <div className="flex bg-gray-100 rounded-lg p-1">
+          {/* ─── Stats row ─── */}
+          <section className="cd-stats">
+            {stats.map((s) => (
+              <div key={s.label} className={`cd-stat ${s.gradient}`}>
+                <div className="cd-stat__icon">
+                  <s.icon />
+                </div>
+                <div className="cd-stat__info">
+                  <span className="cd-stat__value">{s.value}</span>
+                  <span className="cd-stat__label">{s.label}</span>
+                </div>
+              </div>
+            ))}
+          </section>
+
+          {/* ─── Main content grid ─── */}
+          <div className="cd-grid">
+            {/* Left column – Top posts */}
+            <section className="cd-section">
+              <div className="cd-section__header">
+                <div className="cd-section__title-group">
+                  <FaTrophy className="cd-section__icon cd-section__icon--gold" />
+                  <h2 className="cd-section__title">Bài viết nổi bật</h2>
+                </div>
+
+                <div className="cd-tabs">
                   <button
+                    className={`cd-tab ${activeTab === "daily" ? "cd-tab--active" : ""}`}
                     onClick={() => setActiveTab("daily")}
-                    className={`tab-button px-4 py-2 rounded-md transition-colors flex items-center gap-2 ${
-                      activeTab === "daily"
-                        ? "bg-white text-blue-600 shadow-sm"
-                        : "text-gray-600 hover:text-gray-800"
-                    }`}
                   >
-                    <FaCalendarAlt className="w-4 h-4" />
-                    Hôm nay
+                    <FaCalendarAlt /> Hôm nay
                   </button>
                   <button
+                    className={`cd-tab ${activeTab === "monthly" ? "cd-tab--active" : ""}`}
                     onClick={() => setActiveTab("monthly")}
-                    className={`tab-button px-4 py-2 rounded-md transition-colors flex items-center gap-2 ${
-                      activeTab === "monthly"
-                        ? "bg-white text-blue-600 shadow-sm"
-                        : "text-gray-600 hover:text-gray-800"
-                    }`}
                   >
-                    <FaChartLine className="w-4 h-4" />
-                    Tháng này
+                    <FaChartLine /> Tháng này
                   </button>
                 </div>
               </div>
 
-              <div className="grid gap-4">
-                {activeTab === "daily" && (
-                  <>
-                    {topDailyPosts.length > 0 ? (
-                      topDailyPosts.map((post, index) => (
-                        <PostCard
-                          key={post.postId}
-                          post={post}
-                          index={index}
-                          showRank={true}
-                          size="compact"
-                        />
-                      ))
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <FaNewspaper className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>Chưa có bài viết nào hôm nay</p>
-                      </div>
-                    )}
-                  </>
-                )}
+              <div className="cd-post-list">
+                {activeTab === "daily" &&
+                  (topDailyPosts.length > 0 ? (
+                    topDailyPosts.map((post, i) => (
+                      <PostCard
+                        key={post.postId}
+                        post={post}
+                        index={i}
+                        showRank
+                      />
+                    ))
+                  ) : (
+                    <EmptyState message="Chưa có bài viết nổi bật hôm nay" />
+                  ))}
 
-                {activeTab === "monthly" && (
-                  <>
-                    {topMonthlyPosts.length > 0 ? (
-                      topMonthlyPosts.map((post, index) => (
-                        <PostCard
-                          key={post.postId}
-                          post={post}
-                          index={index}
-                          showRank={true}
-                          size="compact"
-                        />
-                      ))
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <FaNewspaper className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                        <p>Chưa có bài viết nào tháng này</p>
-                      </div>
-                    )}
-                  </>
-                )}
+                {activeTab === "monthly" &&
+                  (topMonthlyPosts.length > 0 ? (
+                    topMonthlyPosts.map((post, i) => (
+                      <PostCard
+                        key={post.postId}
+                        post={post}
+                        index={i}
+                        showRank
+                      />
+                    ))
+                  ) : (
+                    <EmptyState message="Chưa có bài viết nổi bật tháng này" />
+                  ))}
               </div>
-            </div>
-          </div>
+            </section>
 
-          {/* Latest Posts Section */}
-          <div className="mb-8">
-            <div className="dashboard-card bg-white rounded-xl shadow-lg p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-                  <FaNewspaper className="text-green-500" />
-                  Bài viết mới nhất
-                </h2>
-                <Link
-                  to="/patient/community/all"
-                  className="text-blue-500 hover:text-blue-700 flex items-center gap-2 font-semibold"
-                >
-                  Xem tất cả
-                  <FaArrowRight className="w-4 h-4" />
+            {/* Right column – Latest posts */}
+            <section className="cd-section">
+              <div className="cd-section__header">
+                <div className="cd-section__title-group">
+                  <FaClock className="cd-section__icon cd-section__icon--green" />
+                  <h2 className="cd-section__title">Mới nhất</h2>
+                </div>
+                <Link to="/patient/community/all" className="cd-section__link">
+                  Xem tất cả <FaChevronRight />
                 </Link>
               </div>
 
-              <div className="grid gap-4">
+              <div className="cd-post-list">
                 {latestPosts.length > 0 ? (
-                  latestPosts.map((post) => (
-                    <PostCard key={post.postId} post={post} size="compact" />
+                  latestPosts.map((post, i) => (
+                    <PostCard key={post.postId} post={post} index={i} />
                   ))
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <FaNewspaper className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Chưa có bài viết nào</p>
-                  </div>
+                  <EmptyState message="Chưa có bài viết nào" />
                 )}
               </div>
-            </div>
-          </div>
-
-          {/* Community Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="stats-card bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Tổng bài viết</h3>
-                  <p className="text-3xl font-bold">{posts.length}</p>
-                </div>
-                <FaNewspaper className="w-12 h-12 opacity-80" />
-              </div>
-            </div>
-
-            <div className="stats-card bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Bài viết hôm nay</h3>
-                  <p className="text-3xl font-bold">{topDailyPosts.length}</p>
-                </div>
-                <FaCalendarAlt className="w-12 h-12 opacity-80" />
-              </div>
-            </div>
-
-            <div className="stats-card bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold mb-2">
-                    Thành viên hoạt động
-                  </h3>
-                  <p className="text-3xl font-bold">
-                    {Math.floor(Math.random() * 50) + 100}
-                  </p>
-                </div>
-                <FaUser className="w-12 h-12 opacity-80" />
-              </div>
-            </div>
+            </section>
           </div>
         </div>
       </div>

@@ -1,20 +1,22 @@
 version: "3.9"
 
 x-env-common: &env-common
-  SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
-  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-service-discovery:8761/eureka/
-  MYSQL_URL_JDBC: jdbc:mysql://mysql:3306/
+  SPRING_CONFIG_IMPORT: ${SPRING_CONFIG_IMPORT}
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
+  MYSQL_URL_JDBC: ${MYSQL_URL_JDBC}
   SPRING_CLOUD_CONFIG_FAIL_FAST: "true"
   SPRING_CLOUD_CONFIG_RETRY_MAX_ATTEMPTS: "12"
   SPRING_CLOUD_CONFIG_RETRY_INITIAL_INTERVAL: "2000"
-  MYSQL_ACCOUNT: root
+  MYSQL_ACCOUNT: ${MYSQL_ACCOUNT}
   #redis
-  REDIS_URL: redis://redis:6379
-  SPRING_DATA_REDIS_HOST: redis
-  SPRING_DATA_REDIS_PORT: "6379"
+  REDIS_URL: ${REDIS_URL}
+  SPRING_DATA_REDIS_HOST: ${SPRING_DATA_REDIS_HOST}
+  SPRING_DATA_REDIS_PORT: "${SPRING_DATA_REDIS_PORT}"
+  # ==== JWT (shared across secured services) ====
+  JWT_TOKEN_SECRET: ${JWT_TOKEN_SECRET}
   # ==== Tracing to Zipkin (Spring Boot 3 / Micrometer Tracing) ====
-  MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: http://zipkin:9411/api/v2/spans
-  MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "1.0"
+  MANAGEMENT_ZIPKIN_TRACING_ENDPOINT: ${MANAGEMENT_ZIPKIN_TRACING_ENDPOINT}
+  MANAGEMENT_TRACING_SAMPLING_PROBABILITY: "${MANAGEMENT_TRACING_SAMPLING_PROBABILITY}"
 
 x-depends-common: &depends-common
   config-server:
@@ -35,10 +37,10 @@ services:
     container_name: mysql
     command: --default-authentication-plugin=mysql_native_password --lower_case_table_names=1 --sql-mode="STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: hms
-      MYSQL_USER: hms
-      MYSQL_PASSWORD: hms
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports: [ "3306:3306" ]
     volumes:
       - mysql_data:/var/lib/mysql
@@ -59,8 +61,8 @@ services:
       - MYSQL_HOST=mysql
       - MYSQL_TCP_PORT=3306
       - MYSQL_DB=zipkin
-      - MYSQL_USER=root
-      - MYSQL_PASS=root
+      - MYSQL_USER=${ZIPKIN_MYSQL_USER}
+      - MYSQL_PASS=${ZIPKIN_MYSQL_PASS}
     depends_on:
       mysql:
         condition: service_healthy
@@ -170,6 +172,10 @@ services:
       <<: *env-common
       SPRING_APPLICATION_NAME: notification-service
       SERVER_PORT: 8097
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      TWILIO_PHONE_NUMBER: ${TWILIO_PHONE_NUMBER}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
     depends_on:
       <<: *depends-common
       mysql:
@@ -184,6 +190,9 @@ services:
       <<: *env-common
       SPRING_APPLICATION_NAME: community-portal-service
       SERVER_PORT: 8094
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
     depends_on: *depends-common
     ports: [ "8094:8094" ]
     networks: [hms-net]
@@ -209,6 +218,9 @@ services:
       <<: *env-common
       SPRING_APPLICATION_NAME: cdss-service
       SERVER_PORT: 8095
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL}
+      OPENAI_API_URL: ${OPENAI_API_URL}
     depends_on:
       <<: *depends-common
       mysql:
@@ -237,6 +249,7 @@ services:
       <<: *env-common
       SPRING_APPLICATION_NAME: security-service
       SERVER_PORT: 8091
+      FRONTEND_URL: ${FRONTEND_URL}
     depends_on: *depends-common
     ports: [ "8091:8091" ]
     networks: [hms-net]

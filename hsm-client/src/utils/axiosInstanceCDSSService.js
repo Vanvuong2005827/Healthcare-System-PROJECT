@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_URLS } from "../config/apiConfig";
+import { getAuthorizationHeader } from "./authToken.js";
 
 const axiosInstanceCDSSService = axios.create({
   baseURL: `${API_URLS.CDSS_SERVICE}/recommendation`,
@@ -9,9 +10,9 @@ const axiosInstanceCDSSService = axios.create({
 // Request interceptor
 axiosInstanceCDSSService.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const authorizationHeader = getAuthorizationHeader();
+    if (authorizationHeader) {
+      config.headers.Authorization = authorizationHeader;
     }
     return config;
   },

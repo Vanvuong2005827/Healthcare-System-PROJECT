@@ -6,8 +6,9 @@ import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import HealthAndSafetyIcon from "@mui/icons-material/HealthAndSafety"; // Import for Health Recommendations
-import AccountCircleIcon from "@mui/icons-material/AccountCircle"; // Import for Profile Icon
+import HealthAndSafetyIcon from "@mui/icons-material/HealthAndSafety";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import ArticleIcon from "@mui/icons-material/Article";
 import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
@@ -15,6 +16,7 @@ const Sidebar = () => {
   const [patientSubmenuOpen, setPatientSubmenuOpen] = useState(false);
   const [doctorSubmenuOpen, setDoctorSubmenuOpen] = useState(false);
   const [healthSubmenuOpen, setHealthSubmenuOpen] = useState(false);
+  const [articlesSubmenuOpen, setArticlesSubmenuOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -150,6 +152,38 @@ const Sidebar = () => {
                     className="text-black"
                   >
                     Create Recommendation
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+
+          {/* Articles Section */}
+          <li className="mb-2">
+            <div
+              className="flex items-center p-2 hover:bg-blue-600 bg-blue-500 cursor-pointer"
+              onClick={() => setArticlesSubmenuOpen(!articlesSubmenuOpen)}
+            >
+              <ArticleIcon className="text-white" />
+              <span className="flex-grow ml-4 text-base font-semibold text-white">
+                Articles
+              </span>
+              {articlesSubmenuOpen ? (
+                <ExpandLessIcon className="text-white" />
+              ) : (
+                <ExpandMoreIcon className="text-white" />
+              )}
+            </div>
+            {articlesSubmenuOpen && (
+              <ul className="mt-0">
+                <li className="py-1 text-base font-semibold hover:bg-gray-100 border border-gray-200 pl-10">
+                  <Link to="/doctor/articles" className="text-black">
+                    My Articles
+                  </Link>
+                </li>
+                <li className="py-1 text-base font-semibold hover:bg-gray-100 border border-gray-200 pl-10">
+                  <Link to="/doctor/articles/create" className="text-black">
+                    Create Article
                   </Link>
                 </li>
               </ul>
