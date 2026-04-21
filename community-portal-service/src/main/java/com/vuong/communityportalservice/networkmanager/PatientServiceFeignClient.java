@@ -11,6 +11,9 @@ public interface PatientServiceFeignClient {
     @GetMapping("/patients/email/{email}")
     ResponseEntity<PatientDto> getPatientByEmail(@PathVariable String email);
 
+    @GetMapping("/patients/id/{patientId}")
+    ResponseEntity<PatientDto> getPatientById(@PathVariable String patientId);
+
     @GetMapping("/patients/profile")
     ResponseEntity<PatientDto> getCurrentPatient();
 }

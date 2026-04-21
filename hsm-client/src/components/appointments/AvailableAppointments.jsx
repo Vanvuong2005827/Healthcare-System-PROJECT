@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import axiosInstanceAppointmentService from "../../utils/axiosInstanceAppointmentService";
 import axiosInstancePatientService from "../../utils/axiosInstancePatientService";
 import axiosInstanceDoctorService from "../../utils/axiosInstanceDoctorService";
@@ -11,14 +11,18 @@ import {
   FaUserMd,
   FaFilter,
   FaTimes,
+  FaExclamationTriangle,
+  FaRedoAlt,
 } from "react-icons/fa";
 
 const AvailableAppointments = () => {
   const [availableAppointments, setAvailableAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [patientId, setPatientId] = useState(null);
   const [bookingAppointment, setBookingAppointment] = useState(null);
+  const fetchedRef = useRef(false);
 
   // Filter states
   const [selectedDate, setSelectedDate] = useState("");
@@ -28,8 +32,16 @@ const AvailableAppointments = () => {
   const [departments, setDepartments] = useState([]);
 
   useEffect(() => {
-    fetchPatientInfo();
-    fetchAvailableAppointments();
+    // Prevent duplicate calls from React StrictMode
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
+    const controller = new AbortController();
+
+    fetchPatientInfo(controller.signal);
+    fetchAvailableAppointments(controller.signal);
+
+    return () => controller.abort();
   }, []);
 
   // Filter appointments when filter values change
@@ -37,21 +49,23 @@ const AvailableAppointments = () => {
     filterAppointments();
   }, [availableAppointments, selectedDate, selectedDoctor, selectedDepartment]);
 
-  const fetchPatientInfo = async () => {
+  const fetchPatientInfo = async (signal) => {
     try {
-      const response = await axiosInstancePatientService.get("/profile");
+      const response = await axiosInstancePatientService.get("/profile", { signal });
       setPatientId(response.data.patientId);
     } catch (error) {
+      if (error.name === "CanceledError") return;
       console.error("Error fetching patient info:", error);
-      toast.error("Failed to fetch patient information");
     }
   };
 
-  const fetchAvailableAppointments = async () => {
+  const fetchAvailableAppointments = async (signal) => {
     try {
       setLoading(true);
+      setFetchError(false);
       const response = await axiosInstanceAppointmentService.get(
-        "/get/all/availability/appointment"
+        "/get/all/availability/appointment",
+        { signal }
       );
 
       // Fetch doctor details for each appointment
@@ -59,13 +73,15 @@ const AvailableAppointments = () => {
         response.data.map(async (appointment) => {
           try {
             const doctorResponse = await axiosInstanceDoctorService.get(
-              `/id/${appointment.doctorId}`
+              `/id/${appointment.doctorId}`,
+              { signal }
             );
             return {
               ...appointment,
               doctorDetails: doctorResponse.data,
             };
           } catch (error) {
+            if (error.name === "CanceledError") throw error;
             console.error(
               `Error fetching doctor details for doctor ${appointment.doctorId}:`,
               error
@@ -108,8 +124,9 @@ const AvailableAppointments = () => {
       setDoctors(uniqueDoctors);
       setDepartments(Array.from(uniqueDepartments));
     } catch (error) {
+      if (error.name === "CanceledError") return;
       console.error("Error fetching available appointments:", error);
-      toast.error("Failed to fetch available appointments");
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -350,7 +367,24 @@ const AvailableAppointments = () => {
             )}
           </div>
 
-          {filteredAppointments.length === 0 ? (
+          {fetchError ? (
+            <div className="text-center py-12">
+              <FaExclamationTriangle className="mx-auto text-6xl text-amber-300 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                Unable to Load Appointments
+              </h3>
+              <p className="text-gray-500 mb-6">
+                Something went wrong while fetching available appointments. Please try again.
+              </p>
+              <button
+                onClick={() => fetchAvailableAppointments()}
+                className="inline-flex items-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200"
+              >
+                <FaRedoAlt className="mr-2" />
+                Retry
+              </button>
+            </div>
+          ) : filteredAppointments.length === 0 ? (
             <div className="text-center py-12">
               <FaCalendarAlt className="mx-auto text-6xl text-gray-300 mb-4" />
               <h3 className="text-xl font-semibold text-gray-600 mb-2">

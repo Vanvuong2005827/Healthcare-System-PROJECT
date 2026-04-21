@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
@@ -12,12 +12,14 @@ const Navbar = () => {
   const [userId, setUserId] = useState(null);
   const [allNotifications, setAllNotifications] = useState([]);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
+  const fetchedRef = useRef(false);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = async (signal) => {
     try {
-      const response = await axiosInstancePatientService.get("/profile");
+      const response = await axiosInstancePatientService.get("/profile", { signal });
       setUserId(response.data.userId);
     } catch (error) {
+      if (error.name === "CanceledError") return;
       console.error("Error fetching user profile:", error);
     }
   };
@@ -57,7 +59,14 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    fetchUserProfile();
+    // Prevent duplicate calls from React StrictMode
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+
+    const controller = new AbortController();
+    fetchUserProfile(controller.signal);
+
+    return () => controller.abort();
   }, []);
 
   const handleClick = (type) => {

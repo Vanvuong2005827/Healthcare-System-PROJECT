@@ -9,21 +9,29 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.Objects;
-
 @Component
 @Slf4j
 public class TokenInterceptor implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate requestTemplate) {
-        String jwtToken = retrieveJwtToken();
+        String authorizationHeader = retrieveAuthorizationHeader();
 
-        if (jwtToken != null && !jwtToken.isEmpty()) {
-            requestTemplate.header(AppConstants.HEADER_STRING, AppConstants.TOKEN_PREFIX + jwtToken);
+        if (authorizationHeader != null && !authorizationHeader.isBlank()) {
+            String headerValue = authorizationHeader.startsWith(AppConstants.TOKEN_PREFIX)
+                    ? authorizationHeader
+                    : AppConstants.TOKEN_PREFIX + authorizationHeader;
+            requestTemplate.header(AppConstants.HEADER_STRING, headerValue);
         }
     }
-    private String retrieveJwtToken() {
-        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
+
+    private String retrieveAuthorizationHeader() {
+        ServletRequestAttributes attributes =
+                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            return null;
+        }
+
+        HttpServletRequest request = attributes.getRequest();
         return request.getHeader(AppConstants.HEADER_STRING);
     }
 }

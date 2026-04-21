@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { FaEnvelope, FaLock } from "react-icons/fa";
 import axiosInstanceUserService from "../../utils/axiosInstanceUserService";
 import axiosInstancePatientService from "../../utils/axiosInstancePatientService";
 import ForgotPassword from "./ForgotPassword";
@@ -24,15 +25,18 @@ const LoginForm = () => {
       .post("/login", userCredential)
       .then(async (resp) => {
         const data = resp.data;
+        const rawToken = data?.userLoginDetails?.token?.startsWith("Bearer ")
+          ? data.userLoginDetails.token.slice("Bearer ".length)
+          : data?.userLoginDetails?.token;
         console.log("Response from login ", data?.userLoginDetails);
         // Set the token to the local storage
-        localStorage.setItem("token", data?.userLoginDetails?.token);
+        localStorage.setItem("token", rawToken);
         // Set the role to the local storage
         localStorage.setItem("role", data?.userLoginDetails?.role);
 
         toast.success(data?.message || "Login successful!");
 
-        console.log("token ", data?.userLoginDetails?.token);
+        console.log("token ", rawToken);
 
         const role = data?.userLoginDetails?.role;
 
@@ -70,65 +74,65 @@ const LoginForm = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto p-8 bg-gray-50 rounded-xl shadow-lg">
-      <h2 className="text-center text-3xl font-extrabold text-gray-900 mb-8">
-        Sign In
-      </h2>
-      <form onSubmit={handleLogin} className="space-y-8">
-        <div className="form-group">
-          <label
-            htmlFor="email"
-            className="block text-lg font-semibold text-gray-700"
-          >
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+    <>
+      <div className="login-form-header">
+        <p className="welcome-text">Welcome back</p>
+        <h2>Sign in to your account</h2>
+        <p className="subtitle">
+          Enter your credentials to access the platform
+        </p>
+      </div>
+
+      <form onSubmit={handleLogin} className="login-form">
+        <div className="form-field">
+          <label htmlFor="login-email">Email address</label>
+          <div className="input-wrapper">
+            <FaEnvelope className="field-icon" />
+            <input
+              type="email"
+              id="login-email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
         </div>
 
-        <div className="form-group">
-          <label
-            htmlFor="password"
-            className="block text-lg font-semibold text-gray-700"
-          >
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            className="mt-2 w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+        <div className="form-field">
+          <label htmlFor="login-password">Password</label>
+          <div className="input-wrapper">
+            <FaLock className="field-icon" />
+            <input
+              type="password"
+              id="login-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
         </div>
 
-        <div className="text-center">
+        <div className="form-options">
+          <div className="remember-me">
+            <input type="checkbox" id="remember" />
+            <label htmlFor="remember">Remember me</label>
+          </div>
           <button
             type="button"
             onClick={() => setShowForgotPassword(true)}
-            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+            className="forgot-link"
           >
-            Forgot your password?
+            Forgot password?
           </button>
         </div>
 
-        <div className="form-group">
-          <button
-            type="submit"
-            className="w-full px-4 py-3 text-lg font-medium text-white bg-blue-600 rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Log In
-          </button>
-        </div>
+        <button type="submit" className="login-submit-btn">
+          Sign In
+        </button>
       </form>
-    </div>
+    </>
   );
 };
 

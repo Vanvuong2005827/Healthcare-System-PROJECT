@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_URLS } from "../config/apiConfig.js";
+import { getAuthorizationHeader } from "./authToken.js";
 
 export const axiosInstanceRoomService = axios.create({
   baseURL: `${API_URLS.ROOM_SERVICE}/rooms`,
@@ -7,10 +8,10 @@ export const axiosInstanceRoomService = axios.create({
 });
 
 axiosInstanceRoomService.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const authorizationHeader = getAuthorizationHeader();
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (authorizationHeader) {
+    config.headers.Authorization = authorizationHeader;
   }
 
   return config;

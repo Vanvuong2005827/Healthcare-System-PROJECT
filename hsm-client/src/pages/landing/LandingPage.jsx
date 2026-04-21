@@ -289,9 +289,6 @@ const LandingPage = () => {
             <Link to="/patient/register" className="btn-primary">
               {t("getStarted")}
             </Link>
-            <Link to="/doctor/register" className="btn-secondary">
-              {t("register")}
-            </Link>
             <Link to="/researcher/register" className="btn-secondary">
               {t("applyResearch")}
             </Link>
@@ -472,7 +469,7 @@ const LandingPage = () => {
                   <Link to="/login">{t("login")}</Link>
                 </li>
                 <li>
-                  <Link to="/doctor/register">{t("register")}</Link>
+                  <Link to="/patient/register">{t("register")}</Link>
                 </li>
               </ul>
             </div>
