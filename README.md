@@ -47,6 +47,9 @@ Dịch vụ hạ tầng:
   - zipkin (9411)
 ```
 
+
+<img width="2250" height="1809" alt="HSM global architecture diagram" src="https://github.com/user-attachments/assets/7ed0c27a-ee29-4146-8692-f142db0db937" />
+
 ## Công nghệ sử dụng
 
 - Backend: Java 17, Spring Boot 3.1.5, Spring Cloud 2022.0.4.
