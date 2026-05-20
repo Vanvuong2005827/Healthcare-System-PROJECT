@@ -46,7 +46,7 @@ public class DoctorRegistrationRequestDto {
     @NotBlank(message = "Institute is required")
     private String institute;
 
-    @NotBlank(message = "Experience years is required")
+    @NotNull(message = "Experience years is required")
     private Integer experienceYears;
 
     @NotBlank(message = "Qualifications is required")
@@ -55,7 +55,7 @@ public class DoctorRegistrationRequestDto {
     @NotBlank(message = "License number is required")
     private String licenseNumber;
 
-    @NotBlank(message = "Date of birth is required")
+    @NotNull(message = "Date of birth is required")
     private LocalDate dateOfBirth;
 
     @NotNull(message = "Gender is required")

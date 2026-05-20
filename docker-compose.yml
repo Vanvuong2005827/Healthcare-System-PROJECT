@@ -275,3 +275,23 @@ services:
       timeout: 5s
       retries: 10
     networks: [hms-net]
+
+  test-data-seeder:
+    profiles: [ "seed" ]
+    build:
+      context: ./test-data-seeder
+      dockerfile: Dockerfile
+    container_name: test-data-seeder
+    environment:
+      SEEDER_API_BASE_URL: ${SEEDER_API_BASE_URL:-http://api-gateway:8090}
+      SEEDER_ADMIN_EMAIL: ${SEEDER_ADMIN_EMAIL:-admin.seed@hsm.test}
+      SEEDER_DEFAULT_PASSWORD: ${SEEDER_DEFAULT_PASSWORD:-Test@12345}
+      SEEDER_REQUEST_TIMEOUT_SECONDS: "${SEEDER_REQUEST_TIMEOUT_SECONDS:-10}"
+      SEEDER_MAX_WAIT_SECONDS: "${SEEDER_MAX_WAIT_SECONDS:-180}"
+      SEEDER_RETRY_SECONDS: "${SEEDER_RETRY_SECONDS:-5}"
+    depends_on:
+      - api-gateway
+      - security-service
+      - patient-service
+      - doctor-service
+    networks: [hms-net]
