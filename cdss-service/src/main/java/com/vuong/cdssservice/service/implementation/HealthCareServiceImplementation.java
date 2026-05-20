@@ -47,6 +47,7 @@ public class HealthCareServiceImplementation implements HealthCareService {
 
             recommendation.setDoctorId(doctorDto.getDoctorId());
             recommendation.setPatientId(recommendationDto.getPatientId());
+            recommendation.setAppointmentId(recommendationDto.getAppointmentId());
             recommendation.setRecommendationMessage(recommendationDto.getRecommendationMessage());
             recommendation.setCreatedAt(LocalDate.now());
             recommendation.setRescheduleAppointment(recommendationDto.getRescheduleAppointment());
@@ -87,6 +88,7 @@ public class HealthCareServiceImplementation implements HealthCareService {
                     .items(recommendationDto.getItems())
                     .patientId(recommendation.getPatientId())
                     .doctorId(recommendation.getDoctorId())
+                    .appointmentId(recommendation.getAppointmentId())
                     .recommendationMessage(recommendation.getRecommendationMessage())
                     .rescheduleAppointment(recommendation.getRescheduleAppointment())
                     .id(recommendation.getId())
@@ -131,6 +133,12 @@ public class HealthCareServiceImplementation implements HealthCareService {
                 () -> new CustomException(new ResponseMessageDto("Recommendation not found", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND)
         );
 
+        if (recommendationDto.getPatientId() != null && !recommendationDto.getPatientId().isBlank()) {
+            recommendation.setPatientId(recommendationDto.getPatientId());
+        }
+        if (recommendationDto.getAppointmentId() != null) {
+            recommendation.setAppointmentId(recommendationDto.getAppointmentId());
+        }
         recommendation.setRecommendationMessage(recommendationDto.getRecommendationMessage());
         recommendation.setRescheduleAppointment(recommendationDto.getRescheduleAppointment());
         recommendation.setCreatedAt(LocalDate.now());
@@ -178,6 +186,7 @@ public class HealthCareServiceImplementation implements HealthCareService {
                 .items(recommendation.getItems().stream().map(this::recommendationItem).toList())
                 .patientId(recommendation.getPatientId())
                 .doctorId(recommendation.getDoctorId())
+                .appointmentId(recommendation.getAppointmentId())
                 .createdDate(recommendation.getCreatedAt())
                 .build();
     }

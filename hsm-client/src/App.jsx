@@ -114,7 +114,6 @@ function App() {
                     element={<PatientDoctorProfileWithAppointment />}
                   />
                   <Route path="doctor/list" element={<List />} />
-                  <Route path="doctor/:doctorId" element={<Single />} />
                   {/* Patient Articles Routes */}
                   <Route path="articles" element={<PatientArticlesPage />} />
                   <Route
@@ -226,10 +225,10 @@ function App() {
               </Route>
             </Route>
           </Routes>
-        </BrowserRouter>
 
-        {/* Health Support Chat Widget - shows on all pages for logged in patients */}
-        <HealthSupportChatWidget />
+          {/* Health Support Chat Widget - shows on all pages for logged in patients */}
+          <HealthSupportChatWidget />
+        </BrowserRouter>
 
         <ToastContainer
           position="top-center"

@@ -16,6 +16,7 @@ public class RecommendationDto {
     private Long id;
     private String patientId;
     private String doctorId;
+    private Long appointmentId;
     private String recommendationMessage;
     private List<ItemDto> items;
     private LocalDate createdDate;

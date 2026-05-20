@@ -4,17 +4,15 @@ import AvailableAppointments from "../../components/appointments/AvailableAppoin
 
 const AvailableAppointmentsPage = () => {
   return (
-    <div className="flex min-h-screen">
-      <div className="w-56">
-        <PatientSidebar />
-      </div>
+    <div className="flex min-h-screen bg-slate-100">
+      <PatientSidebar />
 
-      <div className="flex-1">
+      <main className="flex-1 px-4 py-4 md:px-6">
         <Navbar />
-        <div className="p-4">
+        <div className="mx-auto max-w-7xl">
           <AvailableAppointments />
         </div>
-      </div>
+      </main>
     </div>
   );
 };

@@ -1,22 +1,77 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import LanguageOutlinedIcon from "@mui/icons-material/LanguageOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import ListOutlinedIcon from "@mui/icons-material/ListOutlined";
 import axiosInstancePatientService from "../../utils/axiosInstancePatientService";
 import axiosInstanceNotificationService from "../../utils/axiosInstanceNotificationService";
 
+const resolvePageTitle = (pathname) => {
+  const explicitMatches = [
+    { match: "/health-support-chat", label: "AI Health Support" },
+    { match: "/health-recommendation", label: "Health Recommendations" },
+    { match: "/appointment", label: "Appointments" },
+    { match: "/articles", label: "Articles" },
+    { match: "/community", label: "Community" },
+    { match: "/profile", label: "Profile" },
+    { match: "/inventory", label: "Inventory" },
+    { match: "/health-records", label: "Health Records" },
+    { match: "/analytics", label: "Analytics" },
+    { match: "/rooms", label: "Rooms" },
+    { match: "/dashboard", label: "Dashboard" },
+    { match: "/home", label: "Dashboard" },
+  ];
+
+  const matchedPage = explicitMatches.find(({ match }) => pathname.includes(match));
+
+  if (matchedPage) {
+    return matchedPage.label;
+  }
+
+  const segments = pathname
+    .split("/")
+    .filter(Boolean)
+    .filter((segment) => !["patient", "doctor", "admin"].includes(segment));
+
+  if (segments.length === 0) {
+    return "Dashboard";
+  }
+
+  return segments[segments.length - 1]
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+};
+
+const resolveWorkspaceLabel = (pathname) => {
+  if (pathname.startsWith("/doctor")) {
+    return "Doctor workspace";
+  }
+
+  if (pathname.startsWith("/admin")) {
+    return "Admin workspace";
+  }
+
+  return "Patient workspace";
+};
+
 const Navbar = () => {
+  const location = useLocation();
   const [showSlider, setShowSlider] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [userId, setUserId] = useState(null);
   const [allNotifications, setAllNotifications] = useState([]);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
   const fetchedRef = useRef(false);
+  const isPatientWorkspace = location.pathname.startsWith("/patient");
+
+  const pageTitle = resolvePageTitle(location.pathname);
+  const workspaceLabel = resolveWorkspaceLabel(location.pathname);
 
   const fetchUserProfile = async (signal) => {
     try {
-      const response = await axiosInstancePatientService.get("/profile", { signal });
+      const response = await axiosInstancePatientService.get("/profile", {
+        signal,
+      });
       setUserId(response.data.userId);
     } catch (error) {
       if (error.name === "CanceledError") return;
@@ -24,9 +79,9 @@ const Navbar = () => {
     }
   };
 
-  // Fetch all notifications
   const fetchAllNotifications = async () => {
     if (!userId) return;
+
     try {
       const response = await axiosInstanceNotificationService.get(`/${userId}`);
       setAllNotifications(response.data);
@@ -37,6 +92,7 @@ const Navbar = () => {
 
   const fetchNotifications = async () => {
     if (!userId) return;
+
     try {
       const response = await axiosInstanceNotificationService.get(
         `/unread/${userId}`
@@ -47,163 +103,193 @@ const Navbar = () => {
     }
   };
 
-  // Mark all notifications as read
   const markAllAsRead = async () => {
     if (!userId) return;
+
     try {
       await axiosInstanceNotificationService.post(`/mark-all-read/${userId}`);
-      fetchNotifications(); // Refresh notifications
+      fetchNotifications();
+      fetchAllNotifications();
     } catch (error) {
       console.error("Error marking notifications as read:", error);
     }
   };
 
   useEffect(() => {
-    // Prevent duplicate calls from React StrictMode
-    if (fetchedRef.current) return;
+    if (!isPatientWorkspace) {
+      fetchedRef.current = false;
+      setUserId(null);
+      setNotifications([]);
+      setAllNotifications([]);
+      return undefined;
+    }
+
+    if (fetchedRef.current) return undefined;
     fetchedRef.current = true;
 
     const controller = new AbortController();
     fetchUserProfile(controller.signal);
 
     return () => controller.abort();
-  }, []);
+  }, [isPatientWorkspace]);
 
   const handleClick = (type) => {
-    console.log("Icon clicked!", type);
-
     if (type === "notifications") {
-      setShowSlider(!showSlider);
+      setShowSlider((prev) => !prev);
+      setShowAllNotifications(false);
 
       if (!showSlider) {
         fetchNotifications();
-        setShowAllNotifications(false);
       }
     }
   };
 
   const handleViewAllNotifications = () => {
     fetchAllNotifications().then(() => {
-      setShowAllNotifications(!showAllNotifications);
+      setShowAllNotifications(true);
       setShowSlider(false);
     });
   };
 
-  const NotificationSlider = () => {
-    return (
-      <div
-        className={`absolute right-0 top-12 bg-white shadow-xl p-4 w-80 rounded-lg overflow-y-auto max-h-[400px] border border-gray-200 ${
-          showSlider ? "block" : "hidden"
-        } transition-transform duration-300 ease-in-out z-10`}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-700">Notifications</h2>
-          <div className="flex space-x-2">
-            <button
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-              onClick={markAllAsRead}
-            >
-              Mark all as read
-            </button>
-            <button
-              onClick={handleViewAllNotifications}
-              className="text-sm text-green-600 hover:text-green-800 font-medium"
-            >
-              View all
-            </button>
-          </div>
-        </div>
-        {notifications.length > 0 ? (
-          notifications.map((notification, index) => (
-            <div
-              key={index}
-              className="mb-4 p-3 border-b border-gray-200 hover:bg-gray-100 rounded-md transition duration-150 ease-in-out"
-            >
-              <p className="text-sm font-semibold text-gray-800">
-                {notification.notificationType}
-              </p>
-              <p className="text-sm text-gray-600">
-                {notification.notificationText}
-              </p>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-sm text-gray-500">
-            No unread notifications
-          </p>
-        )}
-      </div>
-    );
-  };
+  const notificationPanelClasses =
+    "absolute right-0 top-[calc(100%+12px)] z-20 w-[340px] max-h-[420px] overflow-y-auto rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl";
 
-  const AllNotificationsView = () => {
-    return (
+  const renderNotificationCard = (items, emptyText) => {
+    if (items.length === 0) {
+      return (
+        <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+          {emptyText}
+        </div>
+      );
+    }
+
+    return items.map((notification, index) => (
       <div
-        className={`absolute right-0 top-12 bg-white shadow-xl p-4 w-80 rounded-lg overflow-y-auto max-h-[400px] border border-gray-200 ${
-          showAllNotifications ? "block" : "hidden"
-        } transition-transform duration-300 ease-in-out z-10`}
+        key={`${notification.notificationType}-${index}`}
+        className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 transition-colors duration-200 hover:border-slate-300 hover:bg-white"
       >
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">
-          All Notifications
-        </h2>
-        {allNotifications.length > 0 ? (
-          allNotifications.map((notification, index) => (
-            <div
-              key={index}
-              className="mb-4 p-3 border-b border-gray-200 hover:bg-gray-100 rounded-md transition duration-150 ease-in-out"
-            >
-              <p className="text-sm font-semibold text-gray-800">
-                {notification.notificationType}
-              </p>
-              <p className="text-sm text-gray-600">
-                {notification.notificationText}
-              </p>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-sm text-gray-500">No notifications</p>
-        )}
+        <p className="text-sm font-semibold text-slate-900">
+          {notification.notificationType}
+        </p>
+        <p className="mt-1 text-sm leading-6 text-slate-600">
+          {notification.notificationText}
+        </p>
       </div>
-    );
+    ));
   };
 
   return (
-    <div className="bg-white shadow h-12 flex items-center justify-between px-4 md:px-6 border-b border-gray-200">
-      <div></div>
-
-      <div className="flex-1 flex items-center justify-center">
-        <Link
-          to="/"
-          className="text-2xl font-bold text-blue-600 hover:text-blue-800 transition-colors duration-200 no-underline"
-        >
-          HMS
-        </Link>
+    <header className="relative mb-6 flex min-h-[78px] items-center justify-between rounded-[28px] border border-slate-200 bg-white px-5 py-4 shadow-sm">
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+          Hospital Management System
+        </p>
+        <div className="mt-2 flex items-center gap-3">
+          <Link
+            to="/"
+            className="text-2xl font-semibold tracking-tight text-slate-900 no-underline transition-colors duration-200 hover:text-slate-700"
+          >
+            HMS
+          </Link>
+          <span className="hidden h-4 w-px bg-slate-200 md:block" />
+          <span className="truncate text-sm font-medium text-slate-500">
+            {pageTitle}
+          </span>
+        </div>
       </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center gap-2 md:gap-3">
+        <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-500 lg:flex">
+          <span className="h-2 w-2 rounded-full bg-emerald-500" />
+          {workspaceLabel}
+        </div>
+
         <button
           onClick={() => handleClick("language")}
-          className="flex items-center space-x-1 focus:outline-none"
+          className="flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-600 transition-colors duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-900 focus:outline-none"
         >
-          <LanguageOutlinedIcon className="text-gray-600 text-base cursor-pointer" />
-          <span className="text-sm text-gray-600">English</span>
+          <LanguageOutlinedIcon fontSize="small" />
+          <span className="hidden sm:inline">English</span>
         </button>
+
         <button
           onClick={() => handleClick("notifications")}
-          className="focus:outline-none"
+          className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition-colors duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-900 focus:outline-none"
         >
-          <NotificationsNoneOutlinedIcon className="text-gray-600 text-base cursor-pointer" />
+          <NotificationsNoneOutlinedIcon fontSize="small" />
+          {notifications.length > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-slate-900 px-1 text-[11px] font-semibold text-white">
+              {notifications.length}
+            </span>
+          )}
         </button>
+
         <button
           onClick={() => handleClick("list")}
-          className="focus:outline-none"
+          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition-colors duration-200 hover:border-slate-300 hover:bg-white hover:text-slate-900 focus:outline-none"
         >
-          <ListOutlinedIcon className="text-gray-600 text-base cursor-pointer" />
+          <ListOutlinedIcon fontSize="small" />
         </button>
       </div>
-      <NotificationSlider />
-      <AllNotificationsView />
-    </div>
+
+      {showSlider && (
+        <div className={notificationPanelClasses}>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Notifications
+              </h2>
+              <p className="text-sm text-slate-500">
+                Recent unread updates for your account
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                className="text-xs font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-900"
+                onClick={markAllAsRead}
+              >
+                Mark all read
+              </button>
+              <button
+                onClick={handleViewAllNotifications}
+                className="rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors duration-200 hover:bg-slate-700"
+              >
+                View all
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {renderNotificationCard(notifications, "No unread notifications")}
+          </div>
+        </div>
+      )}
+
+      {showAllNotifications && (
+        <div className={notificationPanelClasses}>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">
+                All Notifications
+              </h2>
+              <p className="text-sm text-slate-500">
+                Notification history for this account
+              </p>
+            </div>
+            <button
+              onClick={() => setShowAllNotifications(false)}
+              className="text-xs font-semibold text-slate-500 transition-colors duration-200 hover:text-slate-900"
+            >
+              Close
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {renderNotificationCard(allNotifications, "No notifications")}
+          </div>
+        </div>
+      )}
+    </header>
   );
 };
 

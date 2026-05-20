@@ -8,8 +8,8 @@ const RoomPage = () => {
   let zp = useRef(null); // Use useRef to maintain the zp instance
 
   useEffect(() => {
-    const appId = 1827119816;
-    const serverSecret = "d8bca73f155956aa2724813ea2704ff7";
+    const appId = 755664054;
+    const serverSecret = "1671fc16f6292af0423aefb7e36d2fe4";
     const userName = "Enter user name";
 
     const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(

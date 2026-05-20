@@ -25,6 +25,9 @@ public class Recommendation {
     @Column(name = "doctor_id")
     private String doctorId;
 
+    @Column(name = "appointment_id")
+    private Long appointmentId;
+
     @Column(name = "recommendation_message")
     private String recommendationMessage;
 

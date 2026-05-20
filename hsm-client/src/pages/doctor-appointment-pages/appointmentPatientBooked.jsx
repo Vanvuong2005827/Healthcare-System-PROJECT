@@ -4,19 +4,15 @@ import AppointmentPatientBooked from "../../components/doctor-appointment/appoin
 import Sidebar from "../../components/sidebar/PatientSidebar";
 const AppointmentPatientBookedPage = () => {
   return (
-    <div className="flex min-h-screen">
-      <div className="w-56">
-        {" "}
-        <Sidebar />
-      </div>
+    <div className="flex min-h-screen bg-slate-100">
+      <Sidebar />
 
-      <div className="flex-1">
+      <main className="flex-1 px-4 py-4 md:px-6">
         <Navbar />
-        <div className="p-4">
-          {" "}
+        <div className="mx-auto max-w-7xl">
           <AppointmentPatientBooked />
         </div>
-      </div>
+      </main>
     </div>
   );
 };

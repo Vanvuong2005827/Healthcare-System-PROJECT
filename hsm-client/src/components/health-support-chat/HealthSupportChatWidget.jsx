@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   FaPaperPlane,
@@ -15,6 +16,7 @@ import {
 } from "react-icons/fa";
 
 const HealthSupportChatWidget = () => {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([
@@ -331,9 +333,12 @@ const HealthSupportChatWidget = () => {
   // Check if user is logged in
   const isLoggedIn =
     localStorage.getItem("token") && localStorage.getItem("patientId");
+  const isFullChatPage = location.pathname.startsWith(
+    "/patient/health-support-chat"
+  );
 
-  // Don't show widget if user is not logged in
-  if (!isLoggedIn) {
+  // Don't show widget if user is not logged in or already on the full chat page
+  if (!isLoggedIn || isFullChatPage) {
     return null;
   }
 
@@ -342,12 +347,12 @@ const HealthSupportChatWidget = () => {
       {/* Chat Widget */}
       {isOpen && (
         <div
-          className={`bg-white rounded-lg shadow-2xl border border-gray-200 mb-4 transition-all duration-300 transform ${
+          className={`mb-4 rounded-[24px] border border-slate-200 bg-white shadow-2xl transition-all duration-300 transform ${
             isMinimized ? "w-80 h-16" : "w-80 h-96"
           } animate-in slide-in-from-right-1 slide-in-from-bottom-1`}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg">
+          <div className="flex items-center justify-between rounded-t-[24px] bg-slate-900 p-3 text-white">
             <div className="flex items-center">
               <div className="relative">
                 <FaRobot className="text-lg mr-2" />
@@ -363,13 +368,13 @@ const HealthSupportChatWidget = () => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={isMinimized ? maximizeChat : minimizeChat}
-                className="text-white hover:bg-blue-700 p-1 rounded"
+                className="rounded p-1 text-white hover:bg-slate-800"
               >
                 <FaMinus className="text-xs" />
               </button>
               <button
                 onClick={toggleChat}
-                className="text-white hover:bg-blue-700 p-1 rounded"
+                className="rounded p-1 text-white hover:bg-slate-800"
               >
                 <FaTimes className="text-xs" />
               </button>
@@ -393,7 +398,7 @@ const HealthSupportChatWidget = () => {
                       <div
                         className={`max-w-[85%] rounded-lg p-2 text-xs ${
                           message.type === "user"
-                            ? "bg-blue-500 text-white"
+                            ? "bg-slate-900 text-white"
                             : "bg-white text-gray-800 border border-gray-200"
                         }`}
                       >
@@ -473,13 +478,13 @@ const HealthSupportChatWidget = () => {
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Hỏi về sức khỏe..."
-                    className="flex-1 p-2 text-xs border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    className="flex-1 rounded-lg border border-slate-300 p-2 text-xs focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-400"
                     disabled={isLoading}
                   />
                   <button
                     onClick={sendMessage}
                     disabled={isLoading || !inputMessage.trim()}
-                    className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded-lg bg-slate-900 px-3 py-2 text-white hover:bg-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <FaPaperPlane className="text-xs" />
                   </button>
@@ -489,7 +494,7 @@ const HealthSupportChatWidget = () => {
                 <div className="mt-2 flex flex-wrap gap-1">
                   <button
                     onClick={() => setShowQuickActions(!showQuickActions)}
-                    className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors flex items-center"
+                    className="flex items-center rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700 transition-colors hover:bg-slate-200"
                     disabled={isLoading}
                   >
                     <FaLightbulb className="mr-1 text-xs" />
@@ -500,7 +505,7 @@ const HealthSupportChatWidget = () => {
                       <button
                         key={index}
                         onClick={() => sendQuickMessage(suggestion)}
-                        className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
+                        className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-700 transition-colors hover:bg-gray-200"
                         disabled={isLoading}
                       >
                         {suggestion}
@@ -519,7 +524,7 @@ const HealthSupportChatWidget = () => {
                         <button
                           key={index}
                           onClick={() => sendQuickMessage(action)}
-                          className="text-left px-2 py-1 text-xs bg-white text-gray-700 rounded hover:bg-blue-50 hover:text-blue-700 transition-colors border border-gray-100"
+                          className="rounded border border-gray-100 bg-white px-2 py-1 text-left text-xs text-gray-700 transition-colors hover:bg-slate-50 hover:text-slate-900"
                           disabled={isLoading}
                         >
                           {action}
@@ -538,7 +543,7 @@ const HealthSupportChatWidget = () => {
       <div className="relative group">
         <button
           onClick={toggleChat}
-          className={`relative bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ${
+          className={`relative rounded-full bg-slate-900 p-4 text-white shadow-lg transition-all duration-300 hover:bg-slate-700 hover:shadow-xl ${
             isOpen ? "scale-95" : "scale-100 hover:scale-110"
           }`}
         >
@@ -553,14 +558,14 @@ const HealthSupportChatWidget = () => {
 
           {/* Loading indicator on button */}
           {isLoading && isOpen && (
-            <div className="absolute inset-0 rounded-full bg-blue-400 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-slate-700">
               <FaSpinner className="animate-spin text-white" />
             </div>
           )}
 
           {/* Pulse animation when closed */}
           {!isOpen && (
-            <div className="absolute inset-0 rounded-full bg-blue-400 animate-ping opacity-20"></div>
+            <div className="absolute inset-0 rounded-full bg-slate-500 animate-ping opacity-20"></div>
           )}
         </button>
 

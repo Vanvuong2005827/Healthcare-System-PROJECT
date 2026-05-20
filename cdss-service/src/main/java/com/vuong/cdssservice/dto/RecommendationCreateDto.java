@@ -13,6 +13,7 @@ import java.util.List;
 public class RecommendationCreateDto {
     private String patientId;
     private String doctorId;
+    private Long appointmentId;
     private String recommendationMessage;
     private List<ItemDto> items;
     private LocalDate rescheduleAppointment;

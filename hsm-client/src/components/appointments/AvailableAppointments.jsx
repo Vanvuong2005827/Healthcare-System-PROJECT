@@ -31,6 +31,34 @@ const AvailableAppointments = () => {
   const [doctors, setDoctors] = useState([]);
   const [departments, setDepartments] = useState([]);
 
+  const filterAppointments = useCallback(() => {
+    let filtered = [...availableAppointments];
+
+    if (selectedDate) {
+      filtered = filtered.filter(
+        (appointment) => appointment.date === selectedDate
+      );
+    }
+
+    if (selectedDoctor) {
+      filtered = filtered.filter(
+        (appointment) =>
+          appointment.doctorDetails &&
+          appointment.doctorDetails.doctorId === selectedDoctor
+      );
+    }
+
+    if (selectedDepartment) {
+      filtered = filtered.filter(
+        (appointment) =>
+          appointment.doctorDetails &&
+          appointment.doctorDetails.department === selectedDepartment
+      );
+    }
+
+    setFilteredAppointments(filtered);
+  }, [availableAppointments, selectedDate, selectedDoctor, selectedDepartment]);
+
   useEffect(() => {
     // Prevent duplicate calls from React StrictMode
     if (fetchedRef.current) return;
@@ -47,7 +75,7 @@ const AvailableAppointments = () => {
   // Filter appointments when filter values change
   useEffect(() => {
     filterAppointments();
-  }, [availableAppointments, selectedDate, selectedDoctor, selectedDepartment]);
+  }, [filterAppointments]);
 
   const fetchPatientInfo = async (signal) => {
     try {
@@ -125,43 +153,22 @@ const AvailableAppointments = () => {
       setDepartments(Array.from(uniqueDepartments));
     } catch (error) {
       if (error.name === "CanceledError") return;
+
+      if (error?.response?.status === 404) {
+        setAvailableAppointments([]);
+        setFilteredAppointments([]);
+        setDoctors([]);
+        setDepartments([]);
+        setFetchError(false);
+        return;
+      }
+
       console.error("Error fetching available appointments:", error);
       setFetchError(true);
     } finally {
       setLoading(false);
     }
   };
-
-  const filterAppointments = useCallback(() => {
-    let filtered = [...availableAppointments];
-
-    // Filter by date
-    if (selectedDate) {
-      filtered = filtered.filter(
-        (appointment) => appointment.date === selectedDate
-      );
-    }
-
-    // Filter by doctor
-    if (selectedDoctor) {
-      filtered = filtered.filter(
-        (appointment) =>
-          appointment.doctorDetails &&
-          appointment.doctorDetails.doctorId === selectedDoctor
-      );
-    }
-
-    // Filter by department
-    if (selectedDepartment) {
-      filtered = filtered.filter(
-        (appointment) =>
-          appointment.doctorDetails &&
-          appointment.doctorDetails.department === selectedDepartment
-      );
-    }
-
-    setFilteredAppointments(filtered);
-  }, [availableAppointments, selectedDate, selectedDoctor, selectedDepartment]);
 
   const clearFilters = () => {
     setSelectedDate("");

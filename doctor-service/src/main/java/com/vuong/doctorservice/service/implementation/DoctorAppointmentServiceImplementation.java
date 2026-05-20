@@ -230,9 +230,6 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
             log.info("Appointment found with id: {}", appointmentId);
             AppointmentEntity appointment = appointmentOptional.get();
             return modelMapper.map(appointment, AppointmentDto.class);
-        } catch (CustomException ex) {
-            log.error("Error occurred while getting appointment: {}", ex.getMessage());
-            throw ex;
         } catch (Exception ex) {
             log.error("An unexpected error occurred while getting appointment: {}", ex.getMessage());
             throw new CustomException(new ResponseMessageDto("Unexpected error occurred while getting appointment", HttpStatus.INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -255,9 +252,6 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
             log.info("Appointment found with patient id: {}", patientId);
             AppointmentEntity appointment = appointmentOptional.get();
             return modelMapper.map(appointment, AppointmentDto.class);
-        } catch (CustomException ex) {
-            log.error("Error occurred while getting appointment: {}", ex.getMessage());
-            throw ex;
         } catch (Exception ex) {
             log.error("An unexpected error occurred while getting appointment: {}", ex.getMessage());
             throw new CustomException(new ResponseMessageDto("Unexpected error occurred while getting appointment", HttpStatus.INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -570,25 +564,25 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
 
     @Override
     public List<DoctorAvailabilityDto> getAllAvailabilityAppointment() throws CustomException {
-
         try {
-
             log.info("inside getAllAvailabilityAppointment method in DoctorAppointmentServiceImplementation");
             ZoneId vnZone = ZoneId.of("Asia/Ho_Chi_Minh");
 
-            List<DoctorAvailabilityEntity> appointments = doctorAvailabilityRepository.getAvailableAppointments(LocalDate.now(vnZone), LocalTime.now(vnZone));
+            List<DoctorAvailabilityEntity> appointments =
+                    doctorAvailabilityRepository.getAvailableAppointments(
+                            LocalDate.now(vnZone),
+                            LocalTime.now(vnZone)
+                    );
 
-            if (appointments.isEmpty()) {
-                throw new CustomException(new ResponseMessageDto("Doctor Availability not found", HttpStatus.NOT_FOUND), HttpStatus.NOT_FOUND);
-            }
-
-            return appointments.stream().map(entity -> modelMapper.map(entity, DoctorAvailabilityDto.class)).toList();
-        } catch (CustomException ex) {
-            log.error("Error occurred while getting appointment: {}", ex.getMessage());
-            throw ex;
+            return appointments.stream()
+                    .map(entity -> modelMapper.map(entity, DoctorAvailabilityDto.class))
+                    .toList();
         } catch (Exception ex) {
             log.error("An unexpected error occurred while getting appointment: {}", ex.getMessage());
-            throw new CustomException(new ResponseMessageDto("Unexpected error occurred while getting appointment", HttpStatus.INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+            throw new CustomException(
+                    new ResponseMessageDto("Unexpected error occurred while getting appointment", HttpStatus.INTERNAL_SERVER_ERROR),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 
