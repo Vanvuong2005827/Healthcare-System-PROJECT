@@ -50,28 +50,22 @@ const PatientAppointmentDashboard = () => {
   )?.component;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="w-56 bg-white shadow-lg">
-        <PatientSidebar />
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1">
-        {/* Navbar */}
+    <div className="flex min-h-screen bg-sky-50">
+      <PatientSidebar />
+      <div className="min-w-0 flex-1">
         <Navbar />
 
         {/* Tab Navigation */}
-        <div className="bg-white shadow-sm border-b border-gray-200">
-          <div className="px-6">
-            <nav className="flex space-x-8">
+        <div className="bg-white shadow-sm border-b border-slate-200">
+          <div className="overflow-x-auto px-3 sm:px-6">
+            <nav className="flex min-w-max gap-6">
               {menuItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <button
                     key={item.id}
                     onClick={() => setActiveView(item.id)}
-                    className={`flex items-center space-x-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                    className={`flex min-h-[48px] items-center gap-2 border-b-2 px-1 text-sm font-semibold transition-colors ${
                       activeView === item.id
                         ? "border-blue-500 text-blue-600"
                         : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -87,7 +81,7 @@ const PatientAppointmentDashboard = () => {
         </div>
 
         {/* Content Area */}
-        <div className="p-6">{ActiveComponent && <ActiveComponent />}</div>
+        <div className="p-3 sm:p-6">{ActiveComponent && <ActiveComponent />}</div>
       </div>
     </div>
   );

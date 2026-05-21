@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { toast } from "react-toastify";
 import axiosInstanceCDSSService from "../../utils/axiosInstanceCDSSService";
@@ -6,7 +6,6 @@ import axiosInstanceInventoryService from "../../utils/axiosInstanceInventorySer
 import axiosInstanceDoctorService from "../../utils/axiosInstanceDoctorService";
 import {
   HeartIcon,
-  ChatBubbleLeftRightIcon,
   DocumentTextIcon,
   ClockIcon,
   UserIcon,
@@ -16,26 +15,52 @@ import {
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 
+const priorityStyles = {
+  high: {
+    label: "High",
+    badge: "border-rose-200 bg-rose-50 text-rose-700",
+    panel: "border-l-rose-500 bg-rose-50",
+    dot: "bg-rose-500",
+  },
+  medium: {
+    label: "Medium",
+    badge: "border-amber-200 bg-amber-50 text-amber-700",
+    panel: "border-l-amber-500 bg-amber-50",
+    dot: "bg-amber-500",
+  },
+  low: {
+    label: "Low",
+    badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    panel: "border-l-emerald-500 bg-emerald-50",
+    dot: "bg-emerald-500",
+  },
+};
+
+const formatDate = (value) => {
+  if (!value) return "Unknown";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString();
+};
+
 const HealthRecommendation = ({ patientId, appointmentId }) => {
   const [activeTab, setActiveTab] = useState("recommendations");
-  const [isChatOpen, setIsChatOpen] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
   const [healthRecords, setHealthRecords] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch real data from APIs
   useEffect(() => {
     const fetchRecommendations = async () => {
       try {
         setLoading(true);
 
-        // Fetch health recommendations for patient
         const recommendationsResponse = await axiosInstanceCDSSService.get(
-          `/from-doctor/get/byPatient`
+          "/from-doctor/get/byPatient"
         );
         const recommendationsData = recommendationsResponse.data || [];
 
-        // Fetch medicine details and doctor info for each recommendation
         const enrichedRecommendations = await Promise.all(
           recommendationsData.map(async (rec) => {
             const medicines = [];
@@ -44,7 +69,6 @@ const HealthRecommendation = ({ patientId, appointmentId }) => {
               specialty: "General Practitioner",
             };
 
-            // Fetch doctor information
             if (rec.doctorId) {
               try {
                 const doctorResponse = await axiosInstanceDoctorService.get(
@@ -85,25 +109,21 @@ const HealthRecommendation = ({ patientId, appointmentId }) => {
 
             return {
               id: rec.id,
-              doctorName: "Dr. " + doctorInfo.name,
+              doctorName: `Dr. ${doctorInfo.name}`,
               specialty: doctorInfo.specialty,
-              date: rec.createdDate
-                ? new Date(rec.createdDate).toLocaleDateString()
-                : "Unknown",
-              priority: rec.priority || "medium",
+              date: formatDate(rec.createdDate),
+              priority: (rec.priority || "medium").toLowerCase(),
               title: "Health Recommendation",
               content: rec.recommendationMessage,
               medications: medicines,
               followUp: rec.rescheduleAppointment
-                ? new Date(rec.rescheduleAppointment).toLocaleDateString()
+                ? formatDate(rec.rescheduleAppointment)
                 : null,
             };
           })
         );
 
         setRecommendations(enrichedRecommendations);
-
-        // Mock health records for now - you can replace this with actual health records API
         setHealthRecords([
           {
             id: 1,
@@ -126,247 +146,273 @@ const HealthRecommendation = ({ patientId, appointmentId }) => {
 
     if (patientId) {
       fetchRecommendations();
-    } else {
-      // If no patientId, show empty state
-      setLoading(false);
-      setRecommendations([]);
-      setHealthRecords([]);
+      return;
     }
-  }, [patientId, appointmentId]);
 
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case "high":
-        return "text-red-600 bg-red-50 border-red-200";
-      case "medium":
-        return "text-yellow-600 bg-yellow-50 border-yellow-200";
-      case "low":
-        return "text-green-600 bg-green-50 border-green-200";
-      default:
-        return "text-gray-600 bg-gray-50 border-gray-200";
-    }
-  };
+    setLoading(false);
+    setRecommendations([]);
+    setHealthRecords([]);
+  }, [patientId, appointmentId]);
 
   const getStatusIcon = (status) => {
     switch (status) {
       case "high":
-        return <ExclamationTriangleIcon className="w-5 h-5 text-red-500" />;
+        return <ExclamationTriangleIcon className="h-5 w-5 text-rose-500" />;
       case "normal":
-        return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
+        return <CheckCircleIcon className="h-5 w-5 text-emerald-500" />;
       case "low":
-        return <InformationCircleIcon className="w-5 h-5 text-blue-500" />;
+        return <InformationCircleIcon className="h-5 w-5 text-sky-500" />;
       default:
-        return <InformationCircleIcon className="w-5 h-5 text-gray-500" />;
+        return <InformationCircleIcon className="h-5 w-5 text-slate-500" />;
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-300 rounded w-1/3 mb-6"></div>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 bg-gray-300 rounded-lg"></div>
+      <main className="min-h-[calc(100vh-98px)] bg-sky-50 px-3 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-7xl space-y-5">
+          <div className="animate-pulse rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="mb-5 h-12 w-2/3 rounded-2xl bg-slate-200 sm:w-1/3" />
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[1, 2, 3].map((item) => (
+                <div key={item} className="h-24 rounded-2xl bg-slate-100" />
               ))}
             </div>
           </div>
+          {[1, 2].map((item) => (
+            <div
+              key={item}
+              className="h-44 animate-pulse rounded-3xl border border-slate-200 bg-white shadow-sm"
+            />
+          ))}
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full">
-                <HeartSolid className="w-8 h-8 text-white" />
+    <main className="min-h-[calc(100vh-98px)] bg-sky-50 px-3 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl space-y-5">
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 items-start gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl bg-sky-600 text-white shadow-sm sm:h-16 sm:w-16">
+                <HeartSolid className="h-8 w-8" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+              <div className="min-w-0">
+                <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.22em] text-sky-600">
+                  Patient Care
+                </p>
+                <h1 className="break-words text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
                   Health Recommendations
                 </h1>
-                <p className="text-gray-600">
-                  Lời khuyên sức khỏe từ các bác sĩ
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+                  Doctor guidance, prescribed medicine notes, and follow-up
+                  details are grouped here for easier review.
                 </p>
               </div>
             </div>
-            <div className="flex space-x-2">
+
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
               <button
+                type="button"
                 onClick={() => setActiveTab("recommendations")}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                aria-pressed={activeTab === "recommendations"}
+                className={`flex min-h-[44px] items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 ${
                   activeTab === "recommendations"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-sky-600 text-white shadow-sm"
+                    : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-700"
                 }`}
               >
-                <HeartIcon className="w-5 h-5 inline mr-2" />
-                Lời khuyên
+                <HeartIcon className="h-5 w-5" />
+                Recommendations
               </button>
               <button
+                type="button"
                 onClick={() => setActiveTab("records")}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                aria-pressed={activeTab === "records"}
+                className={`flex min-h-[44px] items-center justify-center gap-2 rounded-2xl px-4 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-sky-400 ${
                   activeTab === "records"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-sky-600 text-white shadow-sm"
+                    : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-700"
                 }`}
               >
-                <DocumentTextIcon className="w-5 h-5 inline mr-2" />
+                <DocumentTextIcon className="h-5 w-5" />
                 Health Records
               </button>
             </div>
           </div>
-        </div>
 
-        {/* Content */}
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
+            <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-sky-700">
+                Total Advice
+              </p>
+              <p className="mt-2 text-2xl font-bold text-slate-950">
+                {recommendations.length}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-700">
+                Context
+              </p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
+                From doctor recommendations and saved health data.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">
+                Reminder
+              </p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-slate-800">
+                Contact a doctor if symptoms persist or become severe.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {activeTab === "recommendations" && (
-          <div className="space-y-6">
+          <section className="space-y-4">
             {recommendations.length > 0 ? (
-              recommendations.map((rec) => (
-                <div
-                  key={rec.id}
-                  className="bg-white rounded-xl shadow-lg overflow-hidden"
-                >
-                  <div
-                    className={`p-4 border-l-4 ${
-                      rec.priority === "high"
-                        ? "border-red-500 bg-red-50"
-                        : rec.priority === "medium"
-                        ? "border-yellow-500 bg-yellow-50"
-                        : "border-green-500 bg-green-50"
-                    }`}
+              recommendations.map((rec) => {
+                const priority =
+                  priorityStyles[rec.priority] || priorityStyles.medium;
+
+                return (
+                  <article
+                    key={rec.id}
+                    className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
                   >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="p-2 bg-white rounded-full shadow-sm">
-                          <UserIcon className="w-6 h-6 text-gray-600" />
+                    <div className={`border-l-4 p-4 ${priority.panel}`}>
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white bg-white text-slate-600 shadow-sm">
+                            <UserIcon className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="break-words font-semibold text-slate-950">
+                              {rec.doctorName}
+                            </h3>
+                            <p className="text-sm text-slate-600">
+                              {rec.specialty}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h3 className="font-semibold text-gray-900">
-                            {rec.doctorName}
-                          </h3>
-                          <p className="text-sm text-gray-600">
-                            {rec.specialty}
-                          </p>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${priority.badge}`}
+                          >
+                            <span
+                              className={`h-2 w-2 rounded-full ${priority.dot}`}
+                            />
+                            {priority.label}
+                          </span>
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-500">
+                            <ClockIcon className="h-4 w-4" />
+                            {rec.date}
+                          </span>
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
-                            rec.priority
-                          )}`}
-                        >
-                          {rec.priority.toUpperCase()}
-                        </span>
-                        <span className="text-sm text-gray-500 flex items-center">
-                          <ClockIcon className="w-4 h-4 mr-1" />
-                          {rec.date}
-                        </span>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="p-6">
-                    <h4 className="text-xl font-semibold text-gray-900 mb-3">
-                      {rec.title}
-                    </h4>
-                    <p className="text-gray-700 mb-4 leading-relaxed">
-                      {rec.content}
-                    </p>
-
-                    {rec.medications && rec.medications.length > 0 && (
-                      <div className="mb-4">
-                        <h5 className="font-semibold text-gray-900 mb-2">
-                          Thuốc được kê đơn:
-                        </h5>
-                        <ul className="space-y-1">
-                          {rec.medications.map((med, index) => (
-                            <li
-                              key={index}
-                              className="text-gray-700 flex items-center"
-                            >
-                              <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                              {med}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {rec.followUp && (
-                      <div className="bg-blue-50 p-4 rounded-lg">
-                        <p className="text-sm text-blue-800">
-                          <strong>Lịch tái khám:</strong> {rec.followUp}
+                    <div className="space-y-5 p-5 sm:p-6">
+                      <div>
+                        <h4 className="text-xl font-bold text-slate-950">
+                          {rec.title}
+                        </h4>
+                        <p className="mt-3 break-words text-slate-700 leading-7">
+                          {rec.content || "No recommendation content provided."}
                         </p>
                       </div>
-                    )}
-                  </div>
-                </div>
-              ))
+
+                      {rec.medications && rec.medications.length > 0 && (
+                        <div>
+                          <h5 className="mb-3 font-semibold text-slate-950">
+                            Prescribed medicines
+                          </h5>
+                          <ul className="space-y-2">
+                            {rec.medications.map((med, index) => (
+                              <li
+                                key={index}
+                                className="flex min-w-0 items-start gap-3 rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-slate-700"
+                              >
+                                <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-sky-500" />
+                                <span className="min-w-0 flex-1 break-words">
+                                  {med}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {rec.followUp && (
+                        <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4 text-sm font-semibold text-sky-900">
+                          Follow-up appointment: {rec.followUp}
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                );
+              })
             ) : (
-              <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-                <div className="p-4 bg-gray-100 rounded-full w-16 h-16 mx-auto mb-4">
-                  <HeartIcon className="w-8 h-8 text-gray-400" />
+              <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm sm:p-12">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-sky-50 text-sky-500">
+                  <HeartIcon className="h-8 w-8" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-slate-950">
                   No Health Recommendations
                 </h3>
-                <p className="text-gray-600">
-                  No health recommendations available for this patient yet.
+                <p className="mt-2 text-slate-600">
+                  No health recommendations are available for this patient yet.
                 </p>
               </div>
             )}
-          </div>
+          </section>
         )}
 
         {activeTab === "records" && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <h3 className="text-xl font-bold text-slate-950">
               Health Records
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {healthRecords.map((record) => (
-                <div
+                <article
                   key={record.id}
-                  className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg p-4 border border-gray-200"
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                 >
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-gray-900">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <h4 className="font-semibold text-slate-950">
                       {record.type}
                     </h4>
                     {getStatusIcon(record.status)}
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-2xl font-bold text-gray-900">
-                      {record.value}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Bác sĩ: {record.doctor}
-                    </p>
-                    <p className="text-xs text-gray-500">{record.date}</p>
-                  </div>
-                </div>
+                  <p className="text-2xl font-bold text-slate-950">
+                    {record.value}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Doctor: {record.doctor}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">{record.date}</p>
+                </article>
               ))}
             </div>
 
-            {/* Health Trends Chart Placeholder */}
-            <div className="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="mt-6 rounded-2xl border border-dashed border-sky-200 bg-sky-50 p-6">
+              <h4 className="text-lg font-semibold text-slate-950">
                 Health Trends
               </h4>
-              <div className="h-64 bg-white rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                <p className="text-gray-500">Chart sẽ được hiển thị ở đây</p>
+              <div className="mt-4 flex min-h-48 items-center justify-center rounded-2xl border border-sky-100 bg-white p-6 text-center text-sm text-slate-500">
+                Chart data will appear here when enough health records are
+                available.
               </div>
             </div>
-          </div>
+          </section>
         )}
       </div>
-    </div>
+    </main>
   );
 };
 

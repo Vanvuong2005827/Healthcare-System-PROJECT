@@ -21,19 +21,12 @@ const PatientProfilePage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="w-56 bg-white shadow-lg">
-        <PatientSidebar />
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1">
-        {/* Navbar */}
+    <div className="flex min-h-screen bg-sky-50">
+      <PatientSidebar />
+      <div className="min-w-0 flex-1">
         <Navbar />
 
-        {/* Content Area */}
-        <div className="p-6">
+        <div className="p-3 sm:p-6">
           <div className="max-w-4xl mx-auto">
             {isEditing ? (
               <PatientProfileEdit onCancel={handleCancel} onSave={handleSave} />

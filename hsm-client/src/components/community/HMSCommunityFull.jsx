@@ -315,10 +315,10 @@ const HMSCommunityFull = () => {
   };
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-sky-50">
       <Sidebar />
 
-      <div className="flex-1 p-4">
+      <div className="min-w-0 flex-1 p-3 sm:p-6">
         <Navbar />
         <div className="container mx-auto p-4 bg-gray-100 min-h-screen">
           {/* Header with back button */}

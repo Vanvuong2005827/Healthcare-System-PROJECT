@@ -60,9 +60,9 @@ const BookmarkedArticlesPage = () => {
   };
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-sky-50">
       <PatientSidebar />
-      <div className="flex-grow">
+      <div className="min-w-0 flex-1">
         <Navbar />
         <div className="articles-page">
           <div className="page-header">

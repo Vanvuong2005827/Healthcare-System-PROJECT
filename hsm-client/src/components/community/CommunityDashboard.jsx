@@ -333,9 +333,9 @@ const CommunityDashboard = () => {
   /* ── Loading skeleton ── */
   if (loading) {
     return (
-      <div className="flex">
+      <div className="flex min-h-screen bg-sky-50">
         <Sidebar />
-        <div className="flex-1 p-4">
+        <div className="min-w-0 flex-1 p-3 sm:p-6">
           <Navbar />
           <div className="cd-loading">
             <div className="cd-loading__spinner" />
@@ -348,9 +348,9 @@ const CommunityDashboard = () => {
 
   /* ── Main render ── */
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-sky-50">
       <Sidebar />
-      <div className="flex-1 p-4">
+      <div className="min-w-0 flex-1 p-3 sm:p-6">
         <Navbar />
 
         <div className="cd-wrapper">
