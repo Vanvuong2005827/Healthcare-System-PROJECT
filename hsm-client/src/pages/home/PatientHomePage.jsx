@@ -164,20 +164,20 @@ const PatientHomePage = () => {
       title: "Complete Your Profile",
       description: "Update your medical details for personalized care",
       path: "/patient/profile",
-      iconBg: "bg-violet-500",
-      borderColor: "border-l-violet-500",
-      iconColor: "text-violet-500",
-      lightBg: "bg-violet-50",
+      iconBg: "bg-cyan-500",
+      borderColor: "border-l-cyan-500",
+      iconColor: "text-cyan-500",
+      lightBg: "bg-cyan-50",
     },
     {
       icon: FaRobot,
       title: "AI Health Assistant",
       description: "Get instant answers to your health questions 24/7",
       path: "/patient/health-support-chat",
-      iconBg: "bg-amber-500",
-      borderColor: "border-l-amber-500",
-      iconColor: "text-amber-500",
-      lightBg: "bg-amber-50",
+      iconBg: "bg-sky-500",
+      borderColor: "border-l-sky-500",
+      iconColor: "text-sky-500",
+      lightBg: "bg-sky-50",
     },
   ];
 
@@ -199,13 +199,13 @@ const PatientHomePage = () => {
       icon: FaBed,
       title: "Rest",
       text: "Quality sleep of 7-9 hours each night is crucial for recovery and wellbeing.",
-      gradient: "from-violet-400 to-purple-500",
+      gradient: "from-cyan-400 to-sky-500",
     },
     {
       icon: FaNotesMedical,
       title: "Prevention",
       text: "Regular checkups help catch potential issues early for better outcomes.",
-      gradient: "from-rose-400 to-pink-500",
+      gradient: "from-blue-400 to-sky-600",
     },
   ];
 
@@ -213,7 +213,7 @@ const PatientHomePage = () => {
   const renderWelcomeDashboard = () => (
     <div className="space-y-8">
       {/* Welcome Banner — Gradient with decorative elements */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 rounded-2xl p-8 md:p-10 text-white shadow-xl">
+      <div className="relative overflow-hidden bg-gradient-to-br from-sky-600 via-cyan-600 to-blue-700 rounded-2xl p-8 md:p-10 text-white shadow-xl">
         {/* Decorative circles */}
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/4" />
         <div className="absolute bottom-0 left-1/2 w-56 h-56 bg-white/5 rounded-full translate-y-1/2" />
@@ -224,7 +224,7 @@ const PatientHomePage = () => {
             Patient Dashboard
           </p>
           <h2 className="text-3xl md:text-4xl font-bold mb-3 leading-tight">
-            Welcome back{patientName ? `, ${patientName}` : ""}! 👋
+            Welcome back{patientName ? `, ${patientName}` : ""}!
           </h2>
           <p className="text-blue-100/90 text-lg max-w-xl leading-relaxed">
             Your health journey starts here. Let's get you set up with your
@@ -232,7 +232,7 @@ const PatientHomePage = () => {
           </p>
           <button
             onClick={() => navigate("/patient/appointment/available")}
-            className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 bg-white text-indigo-700 font-semibold rounded-lg shadow-md hover:shadow-lg hover:bg-blue-50 transition-all duration-200"
+            className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 bg-white text-sky-700 font-semibold rounded-lg shadow-md hover:shadow-lg hover:bg-sky-50 transition-all duration-200"
           >
             <FaCalendarPlus className="text-sm" />
             Get Started
@@ -338,7 +338,7 @@ const PatientHomePage = () => {
           </p>
           <button
             onClick={() => navigate("/patient/appointment/available")}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors duration-200"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-sky-700 bg-sky-50 rounded-lg hover:bg-sky-100 transition-colors duration-200"
           >
             <FaCalendarPlus className="text-xs" />
             Book Your First Checkup
@@ -349,12 +349,13 @@ const PatientHomePage = () => {
   );
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-sky-50">
       <Sidebar />
 
-      <div className="flex-1 p-4">
+      <div className="min-w-0 flex-1">
         <Navbar />
 
+        <main className="p-3 sm:p-6">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
@@ -403,6 +404,7 @@ const PatientHomePage = () => {
             </div>
           </>
         )}
+        </main>
       </div>
     </div>
   );

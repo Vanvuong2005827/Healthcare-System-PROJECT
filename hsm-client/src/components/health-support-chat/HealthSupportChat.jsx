@@ -253,9 +253,9 @@ const HealthSupportChat = () => {
   };
 
   return (
-    <div className="flex flex-col h-[600px] bg-white rounded-lg shadow-lg border border-gray-200">
+    <div className="flex h-[calc(100vh-190px)] min-h-[480px] max-h-[720px] w-full flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       {/* Header */}
-      <div className="flex items-center p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg">
+      <div className="flex items-center p-4 bg-sky-600 text-white">
         <FaRobot className="text-2xl mr-3" />
         <div>
           <h3 className="font-bold text-lg">Trợ lý Sức khỏe AI</h3>
@@ -273,7 +273,7 @@ const HealthSupportChat = () => {
             }`}
           >
             <div
-              className={`max-w-[80%] rounded-lg p-3 ${
+              className={`max-w-[90%] rounded-2xl p-3 sm:max-w-[80%] ${
                 message.type === "user"
                   ? "bg-blue-500 text-white"
                   : "bg-gray-100 text-gray-800"
@@ -345,21 +345,21 @@ const HealthSupportChat = () => {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="border-t border-slate-200 p-3 sm:p-4">
         <div className="flex space-x-2">
           <textarea
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Hỏi về tình trạng sức khỏe của bạn..."
-            className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            className="min-w-0 flex-1 resize-none rounded-2xl border border-slate-300 p-3 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-sky-500"
             rows="2"
             disabled={isLoading}
           />
           <button
             onClick={sendMessage}
             disabled={isLoading || !inputMessage.trim()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex min-h-[48px] min-w-[48px] items-center justify-center rounded-2xl bg-sky-600 px-4 py-2 text-white transition-colors hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FaPaperPlane />
           </button>

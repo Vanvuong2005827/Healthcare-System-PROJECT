@@ -4,11 +4,11 @@ import Navbar from "../../components/navbar/Navbar";
 
 const HealthSupportChatPage = () => {
   return (
-    <div className="flex">
+    <div className="flex min-h-screen bg-sky-50">
       <Sidebar />
-      <div className="flex-1 p-4">
+      <div className="min-w-0 flex-1">
         <Navbar />
-        <div className="container mx-auto p-4">
+        <div className="mx-auto w-full max-w-5xl p-3 sm:p-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
               Trợ lý Sức khỏe AI
@@ -18,7 +18,7 @@ const HealthSupportChatPage = () => {
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto">
+          <div className="mx-auto w-full max-w-4xl">
             <HealthSupportChat />
           </div>
         </div>

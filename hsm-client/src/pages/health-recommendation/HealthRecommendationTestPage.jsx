@@ -62,12 +62,9 @@ const HealthRecommendationTestPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen">
-      <div className="w-56">
-        <PatientSidebar />
-      </div>
-
-      <div className="flex-1">
+    <div className="flex min-h-screen bg-sky-50">
+      <PatientSidebar />
+      <div className="min-w-0 flex-1">
         <Navbar />
 
         <div className="p-6">
