@@ -338,7 +338,7 @@ const HealthSupportChatWidget = () => {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 right-4 z-40">
       {/* Chat Widget */}
       {isOpen && (
         <div

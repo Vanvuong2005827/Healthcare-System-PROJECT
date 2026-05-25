@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -8,29 +9,30 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import LocalPharmacyIcon from "@mui/icons-material/LocalPharmacy";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import ForumIcon from "@mui/icons-material/Forum";
 import ChatIcon from "@mui/icons-material/Chat";
 import ArticleIcon from "@mui/icons-material/Article";
 import CloseIcon from "@mui/icons-material/Close";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatedPanel } from "./SidebarMotion";
 
 const navItemBase =
-  "group flex min-h-[52px] w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2";
+  "group flex min-h-[44px] w-full items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-semibold transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2";
 
 const subItemBase =
-  "block rounded-xl px-4 py-2.5 text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400";
+  "block rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-sky-400";
 
 const iconBoxBase =
-  "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border transition-colors duration-200";
+  "flex size-9 shrink-0 items-center justify-center rounded-xl border transition-colors duration-200";
 
 const sectionLabel =
-  "px-3 pb-2 pt-5 text-[11px] font-bold uppercase tracking-[0.22em] text-slate-400";
+  "px-2.5 pb-1.5 pt-3 text-[11px] font-bold uppercase text-slate-400";
 
 const PatientSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const reduceMotion = useReducedMotion();
   const [doctorSubmenuOpen, setDoctorSubmenuOpen] = useState(false);
   const [appointmentSubmenuOpen, setAppointmentSubmenuOpen] = useState(false);
-  const [communitySubmenuOpen, setCommunitySubmenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
 
@@ -38,7 +40,6 @@ const PatientSidebar = () => {
     () => ({
       doctors: location.pathname.startsWith("/patient/doctor"),
       appointments: location.pathname.startsWith("/patient/appointment"),
-      community: location.pathname.startsWith("/patient/community"),
     }),
     [location.pathname]
   );
@@ -46,7 +47,6 @@ const PatientSidebar = () => {
   useEffect(() => {
     setDoctorSubmenuOpen(activeSection.doctors);
     setAppointmentSubmenuOpen(activeSection.appointments);
-    setCommunitySubmenuOpen(activeSection.community);
     setMobileOpen(false);
   }, [activeSection]);
 
@@ -69,6 +69,25 @@ const PatientSidebar = () => {
       window.removeEventListener("hms:close-patient-sidebar", handleClose);
     };
   }, []);
+
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [mobileOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -105,11 +124,53 @@ const PatientSidebar = () => {
         : "border-slate-200 bg-white text-slate-500 group-hover:border-sky-200 group-hover:bg-sky-100 group-hover:text-sky-700"
     }`;
 
+  const desktopMotion = reduceMotion
+    ? {
+        initial: false,
+        animate: {},
+        exit: {},
+        transition: { duration: 0 },
+      }
+    : {
+        initial: { opacity: 0, x: -18 },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: -18 },
+        transition: { duration: 0.18, ease: "easeOut" },
+      };
+
+  const overlayMotion = reduceMotion
+    ? {
+        initial: false,
+        animate: {},
+        exit: {},
+        transition: { duration: 0 },
+      }
+    : {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+        transition: { duration: 0.16, ease: "easeOut" },
+      };
+
+  const sheetMotion = reduceMotion
+    ? {
+        initial: false,
+        animate: {},
+        exit: {},
+        transition: { duration: 0 },
+      }
+    : {
+        initial: { x: "-100%" },
+        animate: { x: 0 },
+        exit: { x: "-100%" },
+        transition: { duration: 0.18, ease: "easeOut" },
+      };
+
   const SidebarContent = ({ onNavigate }) => (
-    <div className="flex h-full flex-col bg-white">
-      <div className="border-b border-slate-200 px-6 py-7">
+    <div className="flex h-full min-h-0 flex-col bg-white">
+      <div className="shrink-0 border-b border-slate-200 px-6 py-5">
         <div className="mb-5 flex items-center justify-between md:hidden">
-          <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
+          <span className="text-[11px] font-bold uppercase text-slate-400">
             Menu
           </span>
           <button
@@ -122,11 +183,11 @@ const PatientSidebar = () => {
           </button>
         </div>
 
-        <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
+        <p className="text-[11px] font-bold uppercase text-slate-400">
           Health Management
         </p>
-        <div className="mt-5 flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-950 text-lg font-bold text-white shadow-sm">
+        <div className="mt-4 flex items-center gap-3">
+          <div className="flex size-11 items-center justify-center rounded-xl bg-slate-950 text-lg font-bold text-white shadow-sm">
             H
           </div>
           <div className="min-w-0">
@@ -140,9 +201,9 @@ const PatientSidebar = () => {
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-4 pb-4">
+      <nav className="min-h-0 flex-1 overflow-hidden px-4 pb-2">
         <p className={sectionLabel}>Overview</p>
-        <ul className="space-y-2">
+        <ul className="space-y-1.5">
           <li>
             <NavLink
               to="/patient/home"
@@ -178,7 +239,7 @@ const PatientSidebar = () => {
         </ul>
 
         <p className={sectionLabel}>Care Services</p>
-        <ul className="space-y-2">
+        <ul className="space-y-1.5">
           <li>
             <button
               type="button"
@@ -196,8 +257,7 @@ const PatientSidebar = () => {
                 <ExpandMoreIcon fontSize="small" />
               )}
             </button>
-            {doctorSubmenuOpen && (
-              <div className="mt-2 space-y-1 pl-14">
+            <AnimatedPanel open={doctorSubmenuOpen} className="mt-1.5 space-y-1 pl-12">
                 <NavLink
                   to="/patient/doctor/all"
                   className={({ isActive }) =>
@@ -211,8 +271,7 @@ const PatientSidebar = () => {
                 >
                   Doctor List
                 </NavLink>
-              </div>
-            )}
+            </AnimatedPanel>
           </li>
 
           <li>
@@ -232,8 +291,10 @@ const PatientSidebar = () => {
                 <ExpandMoreIcon fontSize="small" />
               )}
             </button>
-            {appointmentSubmenuOpen && (
-              <div className="mt-2 space-y-1 pl-14">
+            <AnimatedPanel
+              open={appointmentSubmenuOpen}
+              className="mt-1.5 space-y-1 pl-12"
+            >
                 <NavLink
                   to="/patient/appointment/available"
                   className={({ isActive }) =>
@@ -260,13 +321,12 @@ const PatientSidebar = () => {
                 >
                   Booked Appointments
                 </NavLink>
-              </div>
-            )}
+            </AnimatedPanel>
           </li>
         </ul>
 
         <p className={sectionLabel}>Health Tools</p>
-        <ul className="space-y-2">
+        <ul className="space-y-1.5">
           <li>
             <NavLink
               to="/patient/health-recommendation"
@@ -322,52 +382,13 @@ const PatientSidebar = () => {
             </NavLink>
           </li>
         </ul>
-
-        <p className={sectionLabel}>Community</p>
-        <ul className="space-y-2">
-          <li>
-            <button
-              type="button"
-              className={submenuButtonClass(activeSection.community)}
-              onClick={() => setCommunitySubmenuOpen((value) => !value)}
-              aria-expanded={communitySubmenuOpen}
-            >
-              <span className={submenuIconClass(activeSection.community)}>
-                <ForumIcon fontSize="small" />
-              </span>
-              <span className="min-w-0 flex-1 text-left">Community</span>
-              {communitySubmenuOpen ? (
-                <ExpandLessIcon fontSize="small" />
-              ) : (
-                <ExpandMoreIcon fontSize="small" />
-              )}
-            </button>
-            {communitySubmenuOpen && (
-              <div className="mt-2 space-y-1 pl-14">
-                <NavLink
-                  to="/patient/community"
-                  className={({ isActive }) =>
-                    `${subItemBase} ${
-                      isActive
-                        ? "bg-sky-100 text-sky-800"
-                        : "text-slate-500 hover:bg-sky-50 hover:text-sky-800"
-                    }`
-                  }
-                  onClick={onNavigate}
-                >
-                  HMS Community
-                </NavLink>
-              </div>
-            )}
-          </li>
-        </ul>
       </nav>
 
-      <div className="border-t border-slate-200 p-4">
+      <div className="shrink-0 border-t border-slate-200 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
         <button
           type="button"
           onClick={handleLogout}
-          className="group flex min-h-[52px] w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold text-slate-600 transition-colors hover:bg-sky-50 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2"
+          className="group flex min-h-[44px] w-full items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-sky-50 hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2"
         >
           <span className={iconBoxBase + " border-slate-200 bg-white text-slate-500 group-hover:border-sky-200 group-hover:bg-sky-100 group-hover:text-sky-700"}>
             <LogoutIcon fontSize="small" />
@@ -378,29 +399,52 @@ const PatientSidebar = () => {
     </div>
   );
 
+  SidebarContent.propTypes = {
+    onNavigate: PropTypes.func,
+  };
+
   return (
     <>
-      <aside
-        className={`min-h-screen w-72 shrink-0 border-r border-slate-200 bg-white ${
-          desktopCollapsed ? "hidden" : "hidden md:flex"
-        }`}
-      >
-        <SidebarContent />
-      </aside>
+      <AnimatePresence initial={false}>
+        {!desktopCollapsed && (
+          <motion.aside
+            key="patient-sidebar-desktop"
+            {...desktopMotion}
+            className="fixed inset-y-0 left-0 z-40 hidden h-dvh w-72 overflow-hidden border-r border-slate-200 bg-white md:flex"
+          >
+            <SidebarContent />
+          </motion.aside>
+        )}
+      </AnimatePresence>
+      {!desktopCollapsed && (
+        <div className="hidden w-72 shrink-0 md:block" aria-hidden="true" />
+      )}
 
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+      <AnimatePresence initial={false}>
+        {mobileOpen && (
+        <motion.div
+          key="patient-sidebar-mobile"
+          {...overlayMotion}
+          className="fixed inset-0 z-50 md:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Patient navigation"
+        >
           <button
             type="button"
             className="absolute inset-0 bg-slate-950/45"
             aria-label="Close patient navigation overlay"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="relative h-full w-[min(88vw,20rem)] shadow-2xl">
+          <motion.aside
+            {...sheetMotion}
+            className="relative h-dvh w-[min(88vw,20rem)] shadow-2xl"
+          >
             <SidebarContent onNavigate={() => setMobileOpen(false)} />
-          </aside>
-        </div>
-      )}
+          </motion.aside>
+        </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };

@@ -21,7 +21,6 @@ import {
 } from "@mui/material";
 
 const DoctorHomePage = () => {
-  const [doctorId, setDoctorId] = useState(null);
   const [totalPatients, setTotalPatients] = useState(0);
   const [totalAppointments, setTotalAppointments] = useState(0);
   const [todaysAppointments, setTodaysAppointments] = useState(0);
@@ -35,8 +34,6 @@ const DoctorHomePage = () => {
           "/profile",
         );
         const docId = profileResponse.data.doctorId; // Modify according to your API response structure
-        setDoctorId(docId);
-
         // Fetching all appointments
         const appointmentsResponse = await axiosInstanceAppointmentService.get(
           `/get/all/doctor/${docId}`,
@@ -81,10 +78,10 @@ const DoctorHomePage = () => {
   }, [todaysAppointmentList, patientsDetails]);
 
   return (
-    <div className="flex">
+    <div className="flex min-h-dvh">
       <Sidebar />
 
-      <div className="flex-1 p-4">
+      <div className="min-w-0 flex-1 p-4">
         <Navbar />
         <div className="container mx-auto p-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -110,7 +107,7 @@ const DoctorHomePage = () => {
             <Card className="shadow-lg rounded-lg p-6 text-center">
               <CardContent>
                 <FaCalendarDay className="text-4xl text-red-500 mb-3 mx-auto" />
-                <Typography variant="h5">Today's Appointments</Typography>
+                <Typography variant="h5">Today&apos;s Appointments</Typography>
                 <Typography variant="subtitle1">
                   {todaysAppointments}
                 </Typography>
@@ -122,7 +119,7 @@ const DoctorHomePage = () => {
           <Card sx={{ marginTop: 4, marginBottom: 4 }}>
             <CardContent>
               <Typography variant="h5" component="div">
-                Today's Appointments
+                Today&apos;s Appointments
               </Typography>
               <List>
                 {todaysAppointmentList.map((appointment, index) => {

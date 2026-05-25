@@ -15,9 +15,6 @@ import PatientDoctorList from "./pages/list/patientDoctorList";
 import PatientDoctorProfileWithAppointment from "./pages/single/patientDoctorProfileWithAppointment";
 import AppointmentPatientBookedPage from "./pages/doctor-appointment-pages/appointmentPatientBooked";
 import RoomPage from "./pages/room-page/roomPage";
-import CommunityDashboard from "./components/community/CommunityDashboard";
-import HMSCommunityFull from "./components/community/HMSCommunityFull";
-import PostDetail from "./components/community/PostDetail";
 import PatientHomePage from "./pages/home/PatientHomePage";
 import DoctorHomePage from "./pages/home/DoctorHomePage";
 import AdminAddDoctor from "./pages/list/AdminAddDoctor";
@@ -83,16 +80,6 @@ function App() {
                   <Route path=":patientId" element={<Single />} />
                   <Route path="new" element={<New />} />
                   <Route path="doctor/all" element={<PatientDoctorList />} />
-                  <Route path="community" element={<CommunityDashboard />} />
-                  <Route path="community/all" element={<HMSCommunityFull />} />
-                  <Route
-                    path="community/create"
-                    element={<HMSCommunityFull />}
-                  />
-                  <Route
-                    path="community/post/:postId"
-                    element={<PostDetail />}
-                  />
                   <Route
                     path="appointment/available"
                     element={<AvailableAppointmentsPage />}

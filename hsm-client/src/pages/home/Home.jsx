@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
 import Navbar from "../../components/navbar/Navbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import axiosInstancePatientService from "../../utils/axiosInstancePatientService";
@@ -7,7 +6,7 @@ import axiosInstanceDoctorService from "../../utils/axiosInstanceDoctorService";
 import axiosInstanceAppointmentService from "../../utils/axiosInstanceAppointmentService";
 import { FaUserInjured, FaUserMd, FaCalendarAlt } from "react-icons/fa";
 import { Pie, Bar } from "react-chartjs-2";
-import Chart from "chart.js/auto";
+import "chart.js/auto";
 import axiosInstanceInventoryService from "../../utils/axiosInstanceInventoryService";
 
 const Home = () => {
@@ -60,16 +59,15 @@ const Home = () => {
           (p) => p.gender === "Female"
         ).length;
 
-        const newChartData = {
-          ...chartData,
+        setChartData((currentChartData) => ({
+          ...currentChartData,
           datasets: [
             {
-              ...chartData.datasets[0],
+              ...currentChartData.datasets[0],
               data: [maleCount, femaleCount],
             },
           ],
-        };
-        setChartData(newChartData);
+        }));
       } catch (error) {
         console.error("Error:", error);
       }
@@ -171,9 +169,9 @@ const Home = () => {
   };
 
   return (
-    <div className="home flex">
+    <div className="home flex min-h-dvh">
       <Sidebar />
-      <div className="homeContainer flex-1">
+      <div className="homeContainer min-w-0 flex-1">
         <Navbar />
 
         <div className="widgets grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
@@ -197,27 +195,14 @@ const Home = () => {
         </div>
 
         {/* Charts Container */}
-        <div
-          className="charts-container"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "20px",
-          }}
-        >
+        <div className="charts-container grid grid-cols-1 gap-5 p-4 lg:grid-cols-2">
           {/* Pie Chart */}
-          <div
-            className="chart-container"
-            style={{ width: "400px", height: "400px", marginRight: "20px" }}
-          >
+          <div className="chart-container h-[320px] min-w-0 sm:h-[400px]">
             <Pie data={chartData} options={chartOptions} />
           </div>
 
           {/* Bar Chart */}
-          <div
-            className="chart-container"
-            style={{ width: "400px", height: "400px" }}
-          >
+          <div className="chart-container h-[320px] min-w-0 sm:h-[400px]">
             <Bar data={medicineData} options={barChartOptions} />
           </div>
         </div>

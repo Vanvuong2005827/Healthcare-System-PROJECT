@@ -217,7 +217,7 @@ const LandingPage = () => {
               <FaClock className="service-icon" />
               <h3>{t("telemedicine")}</h3>
               <p>{t("telemedicineDesc")}</p>
-              <Link to="/patient/community" className="service-link">
+              <Link to="/patient/appointment/available" className="service-link">
                 {t("learnMore")}
               </Link>
             </div>
