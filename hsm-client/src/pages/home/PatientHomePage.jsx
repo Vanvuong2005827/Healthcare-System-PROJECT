@@ -227,7 +227,7 @@ const PatientHomePage = () => {
             Welcome back{patientName ? `, ${patientName}` : ""}!
           </h2>
           <p className="text-blue-100/90 text-lg max-w-xl leading-relaxed">
-            Your health journey starts here. Let's get you set up with your
+            Your health journey starts here. Let&apos;s get you set up with your
             first checkup and personalized health tracking.
           </p>
           <button
@@ -349,7 +349,7 @@ const PatientHomePage = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-sky-50">
+    <div className="flex min-h-dvh bg-sky-50">
       <Sidebar />
 
       <div className="min-w-0 flex-1">

@@ -14,7 +14,6 @@ const routeLabels = [
   { match: "/patient/doctor", label: "Doctors" },
   { match: "/patient/profile", label: "My Profile" },
   { match: "/patient/articles", label: "Doctor Articles" },
-  { match: "/patient/community", label: "Community" },
   { match: "/patient/home", label: "Dashboard" },
   { match: "/patient/dashboard", label: "Dashboard" },
 ];
