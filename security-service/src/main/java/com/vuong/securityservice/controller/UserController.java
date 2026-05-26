@@ -8,6 +8,7 @@ import com.vuong.securityservice.repository.UserRepository;
 import com.vuong.securityservice.service.RecoveryService;
 import com.vuong.securityservice.service.UserService;
 import com.vuong.securityservice.utils.JwtUtils;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,7 +35,7 @@ public class UserController {
     private UserRepository userRepository;
 
     @PostMapping("/register")
-    public ResponseEntity<UserRegistrationResponseDto> register(@RequestBody UserRegistrationRequestDto userDto)
+    public ResponseEntity<UserRegistrationResponseDto> register(@Valid @RequestBody UserRegistrationRequestDto userDto)
             throws CustomException{
         log.info("Inside register method of UserController");
         UserDto responseUser = userService.createUser(userDto);

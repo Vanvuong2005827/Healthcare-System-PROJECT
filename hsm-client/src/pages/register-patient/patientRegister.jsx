@@ -3,6 +3,12 @@ import { useNavigate } from "react-router-dom";
 import axiosInstancePatientService from "../../utils/axiosInstancePatientService";
 import { toast } from "react-toastify";
 import OpenNavbar from "../../components/navbar/openNav";
+import {
+  PHONE_NUMBER_HELPER_TEXT,
+  PASSWORD_HELPER_TEXT,
+  normalizePatientRegistration,
+  validatePatientRegistration,
+} from "../../utils/patientRegistrationValidation";
 
 const PatientRegistration = () => {
   const navigate = useNavigate();
@@ -20,9 +26,15 @@ const PatientRegistration = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const validationMessage = validatePatientRegistration(formData);
+    if (validationMessage) {
+      toast.error(validationMessage);
+      return;
+    }
+
     // POST request to the server endpoint
     axiosInstancePatientService
-      .post("/register", formData)
+      .post("/register", normalizePatientRegistration(formData))
       .then((response) => {
         console.log(response.data);
         toast.success(
@@ -68,6 +80,7 @@ const PatientRegistration = () => {
                     id="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
+                    maxLength="20"
                     required
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   />
@@ -87,6 +100,7 @@ const PatientRegistration = () => {
                     id="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
+                    maxLength="20"
                     required
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   />
@@ -129,6 +143,9 @@ const PatientRegistration = () => {
                     id="password"
                     value={formData.password}
                     onChange={handleChange}
+                    title={PASSWORD_HELPER_TEXT}
+                    minLength="8"
+                    maxLength="72"
                     required
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   />
@@ -226,6 +243,10 @@ const PatientRegistration = () => {
                     id="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={handleChange}
+                    inputMode="numeric"
+                    pattern="[0-9]{10,11}"
+                    maxLength="11"
+                    title={PHONE_NUMBER_HELPER_TEXT}
                     required
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                   />

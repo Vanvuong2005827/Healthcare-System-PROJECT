@@ -1,4 +1,4 @@
-﻿package com.vuong.patientservice.constants;
+package com.vuong.patientservice.constants;
 
 public class AppConstants {
     public static final String TOKEN_SECRET = System.getenv("JWT_TOKEN_SECRET") != null
