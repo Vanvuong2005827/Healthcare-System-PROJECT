@@ -1,9 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaHeartbeat, FaEnvelope, FaLock, FaUser, FaPhone, FaMapMarkerAlt, FaCalendarAlt, FaTint } from "react-icons/fa";
 import { toast } from "react-toastify";
 import axiosInstanceUserService from "../../utils/axiosInstanceUserService";
 import axiosInstancePatientService from "../../utils/axiosInstancePatientService";
+import {
+  PHONE_NUMBER_HELPER_TEXT,
+  PASSWORD_HELPER_TEXT,
+  normalizePatientRegistration,
+  validatePatientRegistration,
+} from "../../utils/patientRegistrationValidation";
 import ForgotPassword from "../../components/loginform/ForgotPassword";
 import "./login.scss";
 
@@ -95,8 +101,14 @@ const AuthPage = () => {
 
   const handleRegister = (e) => {
     e.preventDefault();
+    const validationMessage = validatePatientRegistration(regForm);
+    if (validationMessage) {
+      toast.error(validationMessage);
+      return;
+    }
+
     axiosInstancePatientService
-      .post("/register", regForm)
+      .post("/register", normalizePatientRegistration(regForm))
       .then((response) => {
         toast.success(
           response?.data?.message || "Registered successfully!"
@@ -297,6 +309,7 @@ const AuthPage = () => {
                           placeholder="John"
                           value={regForm.firstName}
                           onChange={handleRegChange}
+                          maxLength="20"
                           required
                         />
                       </div>
@@ -312,6 +325,7 @@ const AuthPage = () => {
                           placeholder="Doe"
                           value={regForm.lastName}
                           onChange={handleRegChange}
+                          maxLength="20"
                           required
                         />
                       </div>
@@ -345,6 +359,9 @@ const AuthPage = () => {
                           placeholder="••••••••"
                           value={regForm.password}
                           onChange={handleRegChange}
+                          title={PASSWORD_HELPER_TEXT}
+                          minLength="8"
+                          maxLength="72"
                           required
                         />
                       </div>
@@ -418,9 +435,13 @@ const AuthPage = () => {
                           type="tel"
                           id="reg-phoneNumber"
                           name="phoneNumber"
-                          placeholder="+84 xxx xxx xxx"
+                          placeholder="0912345678"
                           value={regForm.phoneNumber}
                           onChange={handleRegChange}
+                          inputMode="numeric"
+                          pattern="[0-9]{10,11}"
+                          maxLength="11"
+                          title={PHONE_NUMBER_HELPER_TEXT}
                           required
                         />
                       </div>

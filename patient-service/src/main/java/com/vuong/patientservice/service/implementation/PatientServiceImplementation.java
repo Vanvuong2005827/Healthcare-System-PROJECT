@@ -33,6 +33,12 @@ public class PatientServiceImplementation implements PatientService {
     @Override
     public PatientDto registerPatient(PatientRegistrationRequestDto registrationDto) throws CustomException {
         try {
+            if (patientRepository.findByEmail(registrationDto.getEmail()).isPresent()) {
+                String errorMessage = "Patient with email " + registrationDto.getEmail() + " already exists";
+                throw new CustomException(new ResponseMessageDto(errorMessage, HttpStatus.BAD_REQUEST),
+                        HttpStatus.BAD_REQUEST);
+            }
+
             UserRegistrationRequestDto userRegistrationRequestDto = new UserRegistrationRequestDto();
             userRegistrationRequestDto.setEmail(registrationDto.getEmail());
             userRegistrationRequestDto.setPassword(registrationDto.getPassword());
