@@ -25,8 +25,8 @@ public class ArticleEntity {
     @Column(name = "title", nullable = false, length = 250)
     private String title;
 
-    @Column(name = "content", nullable = false)
     @Lob
+    @Column(name = "content", nullable = false, columnDefinition = "LONGTEXT")
     private String content;
 
     @Enumerated(EnumType.STRING)
