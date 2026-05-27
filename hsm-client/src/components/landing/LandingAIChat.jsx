@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { FaComments, FaPaperPlane, FaRobot, FaUser, FaTimes, FaMinus, FaSpinner } from "react-icons/fa";
+import { askHealthChatbot } from "../../services/healthChatbotService";
 
 const LandingAIChat = () => {
 	const [isOpen, setIsOpen] = useState(false);
@@ -28,13 +29,9 @@ const LandingAIChat = () => {
 		setInputMessage("");
 		setLoading(true);
 		try {
-			const fd = new FormData();
-			fd.append("question", q);
-			// public landing usage: no auth headers
-			const res = await fetch("https://ai-chat.whodev.top/ask", { method: "POST", body: fd });
-			const data = await res.json();
-			if (data && data.ok && data.data && data.data.text) {
-				setMessages((m) => [...m, { id: Date.now() + 1, type: "bot", content: data.data.text, timestamp: new Date() }]);
+			const data = await askHealthChatbot(q, { includeAuth: false });
+			if (data && data.text) {
+				setMessages((m) => [...m, { id: Date.now() + 1, type: "bot", content: data.text, timestamp: new Date() }]);
 			} else {
 				setMessages((m) => [...m, { id: Date.now() + 1, type: "bot", content: "Xin lỗi, không nhận được phản hồi. Vui lòng thử lại sau.", timestamp: new Date() }]);
 			}

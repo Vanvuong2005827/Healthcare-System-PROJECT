@@ -47,12 +47,13 @@ public class SendMailUtil {
 
             Context context = new Context();
             context.setVariables(mail.getProperties());
-            String htmlMsg = templateEngine.process(mail.getTemplate(), context);
+            String htmlMsg = templateEngine.process(resolveTemplateName(mail.getTemplate()), context);
             mimeMessageHelper.setText(htmlMsg, true);
             mailSender.send(mimeMessage);
         } catch (Exception e) {
-            log.error("error sending email");
-            throw new CustomException(new ResponseMessageDto("Error sending email: " + e.getMessage(), HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            String errorMessage = getRootCauseMessage(e);
+            log.error("error sending email to {}: {}", mail.getTo(), errorMessage, e);
+            throw new CustomException(new ResponseMessageDto("Error sending email: " + errorMessage, HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -87,7 +88,7 @@ public class SendMailUtil {
             helper.setSubject(mail.getSubject());
             Context context = new Context();
             context.setVariables(mail.getProperties());
-            String htmlMsg = templateEngine.process(mail.getTemplate(), context);
+            String htmlMsg = templateEngine.process(resolveTemplateName(mail.getTemplate()), context);
             helper.setText(htmlMsg, true);
             if (files != null && files.length > 0) {
                 for (MultipartFile file : files) {
@@ -96,8 +97,27 @@ public class SendMailUtil {
             }
             mailSender.send(message);
         } catch (Exception e) {
-            log.error("error sending email");
-            throw new CustomException(new ResponseMessageDto("Error sending email", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
+            String errorMessage = getRootCauseMessage(e);
+            log.error("error sending email to {}: {}", mail.getTo(), errorMessage, e);
+            throw new CustomException(new ResponseMessageDto("Error sending email: " + errorMessage, HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    private String resolveTemplateName(String template) {
+        if (template == null) {
+            return null;
+        }
+
+        return template.endsWith(".html") ? template.substring(0, template.length() - 5) : template;
+    }
+
+    private String getRootCauseMessage(Exception exception) {
+        Throwable cause = exception;
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+
+        String message = cause.getMessage();
+        return message != null && !message.isBlank() ? message : exception.getMessage();
     }
 }

@@ -19,9 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -141,7 +141,7 @@ public class ResearcherServiceImplementation implements ResearcherService {
 
 
 
-            try(CSVWriter csvWriter = new CSVWriter(new FileWriter(new File(fileName)))){
+            try(CSVWriter csvWriter = new CSVWriter(new FileWriter(fileName))){
                 String[] header = {
                         "Patient ID", "Checkup Date", "Height (cm)", "Weight (kg)", "Blood Pressure",
                         "Blood Sugar", "Body Temperature", "Pulse Rate", "Allergies", "Past Surgeries",
@@ -180,27 +180,24 @@ public class ResearcherServiceImplementation implements ResearcherService {
                     };
                     csvWriter.writeNext(data);
                 }
-                ResearcherEntity researcherEntity = researcher.get();
-                researcherEntity.setIsTaken(true);
-                analyticResearchRepository.save(researcherEntity);
             }
-            System.out.println(1);
-
             Map<String, Object> props = new HashMap<>();
             props.put("appName", "HMS System");
             props.put("requestId", researcher.get().getId().toString());
             props.put("recipientName", researcher.get().getName());
+            props.put("approverName", "HMS Admin");
             props.put("approvalDate", LocalDate.now().toString());
             props.put("fullName", researcher.get().getName());
             props.put("email", researcher.get().getEmail());
             props.put("designation", researcher.get().getDesignation());
             props.put("institution", researcher.get().getInstitute());
-            props.put("accessScope", "All");
+            props.put("accessScope", "Anonymized health records CSV");
             props.put("expiryDate", LocalDate.now().plusDays(30).toString());
-            props.put("securityNotes", "None");
+            props.put("researchPurposeMethodology", researcher.get().getPurpose());
+            props.put("securityNotes", "Please store the attached data securely and use it only for the approved research purpose.");
             props.put("dataAttribution", "HMS");
             props.put("supportEmail", "support@whodev.top");
-            props.put("appWebsite", "whodev.top");
+            props.put("appWebsite", "https://whodev.top");
             props.put("year", LocalDate.now().getYear());
             props.put("orgName", "HMS");
 
@@ -208,39 +205,36 @@ public class ResearcherServiceImplementation implements ResearcherService {
                     .to(researcher.get().getEmail())
                     .content("")
                     .template("researcher.html")
-                    .subject("Xác nhận phê duyệt truy cập dữ liệu thành công")
+                    .subject("Research data access approved")
                     .properties(props)
                     .build();
-            System.out.println(2);
             Path path = Paths.get(fileName);
-            System.out.println(3);
-            MultipartFile[] files = new MultipartFile[0];
-            if (Files.exists(path)) {
-                byte[] bytes = Files.readAllBytes(path);
-                MultipartFile csvPart = new MockMultipartFile(
-                        "files",
-                        path.getFileName().toString(),
-                        "text/csv",
-                        bytes
-                );
-                files = new MultipartFile[]{ csvPart };
+            if (!Files.exists(path)) {
+                throw new CustomException(new ResponseMessageDto("Research data CSV was not created", HttpStatus.INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            System.out.println(4);
-
-
-
-            System.out.println("5: about to call notification");
-
-
+            byte[] bytes = Files.readAllBytes(path);
+            MultipartFile csvPart = new MockMultipartFile(
+                    "files",
+                    path.getFileName().toString(),
+                    "text/csv",
+                    bytes
+            );
+            MultipartFile[] files = new MultipartFile[]{ csvPart };
             String dataJson = objectMapper.writeValueAsString(dataMailRequest);
 
             notificationServiceFeignClient.sendEmailWithAttachment(dataJson, files);
+            ResearcherEntity researcherEntity = researcher.get();
+            researcherEntity.setIsTaken(true);
+            analyticResearchRepository.save(researcherEntity);
+            log.info("Research data email sent successfully to {}", researcher.get().getEmail());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("Error while creating research data email attachment for researcher id: {}", id, e);
+            throw new CustomException(new ResponseMessageDto("Error while creating research data email attachment", HttpStatus.INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void giveAccessToResearcher(Long id) throws CustomException {
         try {
             if (analyticResearchRepository.findByIdAndIsValidIsFalse(id) == null) {
@@ -253,8 +247,11 @@ public class ResearcherServiceImplementation implements ResearcherService {
             ResearcherEntity researcherEntity = researcher.get();
             researcherEntity.setIsValid(true);
             analyticResearchRepository.save(researcherEntity);
+            healthDataToCsv(id, "research-data-" + id + ".csv");
+        } catch (CustomException e) {
+            throw e;
         } catch (Exception e) {
-            log.error("Error while giving access to researcher with id: {}", id);
+            log.error("Error while giving access to researcher with id: {}", id, e);
             throw new CustomException(new ResponseMessageDto("Error while giving access to researcher with id: " + id, HttpStatus.INTERNAL_SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
