@@ -14,6 +14,7 @@ const API_CONFIG = {
       COMMUNITY_PORTAL_SERVICE: 8090,
       ANALYTIC_RESEARCH_SERVICE: 8090,
       CDSS_SERVICE: 8090,
+      CHATBOT_SERVICE: 8090,
     },
   },
   production: {
@@ -29,6 +30,7 @@ const API_CONFIG = {
       COMMUNITY_PORTAL_SERVICE: "api-gateway.whodev.top",
       ANALYTIC_RESEARCH_SERVICE: "api-gateway.whodev.top",
       CDSS_SERVICE: "api-gateway.whodev.top",
+      CHATBOT_SERVICE: "api-gateway.whodev.top",
     },
   },
 };
@@ -99,6 +101,10 @@ export const API_URLS = {
     currentEnv === "production"
       ? `${config.BASE_URL}${config.SERVICES.CDSS_SERVICE}`
       : `${config.BASE_URL}:${config.PORTS.CDSS_SERVICE}`,
+  CHATBOT_SERVICE:
+    currentEnv === "production"
+      ? `${config.BASE_URL}${config.SERVICES.CHATBOT_SERVICE}`
+      : `${config.BASE_URL}:${config.PORTS.CHATBOT_SERVICE}`,
 };
 
 // Export current environment info

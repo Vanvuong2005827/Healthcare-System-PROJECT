@@ -113,11 +113,11 @@ const ResearcherManagement = () => {
       await axiosInstanceAnalyticResearchService.get(
         `/give-access/${researcherId}`
       );
-      toast.success("Access granted successfully!");
+      toast.success("Access granted and email sent successfully!");
       fetchData();
     } catch (error) {
       console.error("Error granting access:", error);
-      toast.error("Error granting access to researcher");
+      toast.error("Error granting access or sending email to researcher");
     }
   };
 
@@ -145,8 +145,8 @@ const ResearcherManagement = () => {
       toast.success("Health data downloaded successfully!");
       fetchData(); // Refresh to update the taken status
     } catch (error) {
-      console.error("Health data downloaded successfully:", error);
-      toast.error("Health data downloaded successfully");
+      console.error("Error downloading health data:", error);
+      toast.error("Error downloading health data");
     }
   };
 

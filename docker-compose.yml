@@ -133,7 +133,11 @@ services:
       <<: *env-common
       SPRING_APPLICATION_NAME: api-gateway
       SERVER_PORT: 8090
-    depends_on: *depends-common
+      HEALTH_CHATBOT_URI: http://health-chatbot:8000
+    depends_on:
+      <<: *depends-common
+      health-chatbot:
+        condition: service_healthy
     ports: [ "8090:8090" ]
     networks: [hms-net]
 
@@ -226,6 +230,24 @@ services:
       mysql:
         condition: service_healthy
     ports: [ "8095:8095" ]
+    networks: [hms-net]
+
+  health-chatbot:
+    build: { context: ./health-chatbot-main, dockerfile: Dockerfile }
+    container_name: health-chatbot
+    environment:
+      HMS_PATIENT_PROFILE_URL: http://patient-service:8092/patients/profile
+      HMS_PATIENT_HEALTH_RECORDS_URL: http://patient-service:8092/patients/health-records/patient/{patient_id}
+      HMS_CHATBOT_VERIFY_PATIENT_ID: "true"
+    depends_on:
+      patient-service:
+        condition: service_started
+    ports: [ "8000:8000" ]
+    healthcheck:
+      test: [ "CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()\"" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks: [hms-net]
 
   pharmaceutical-inventory-service:

@@ -13,6 +13,7 @@ import {
   FaComments,
   FaMinus,
 } from "react-icons/fa";
+import { askHealthChatbot } from "../../services/healthChatbotService";
 
 const HealthSupportChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,6 +34,7 @@ const HealthSupportChatWidget = () => {
   const messagesEndRef = useRef(null);
 
   const quickActions = [
+    "Tình trạng của tôi như thế nào",
     "Chiều cao cân nặng của tôi",
     "Huyết áp của tôi thế nào?",
     "BMI của tôi",
@@ -180,44 +182,18 @@ const HealthSupportChatWidget = () => {
   const handleAIResponse = async (question) => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const patientId = localStorage.getItem("patientId");
+      const data = await askHealthChatbot(question);
+      const botMessage = {
+        id: Date.now() + 1,
+        type: "bot",
+        content: data.text,
+        structured: data.structured,
+        confidence: data.confidence,
+        meta: data.meta,
+        timestamp: new Date(),
+      };
 
-      if (!token || !patientId) {
-        toast.error("Please login to use health support chat");
-        setIsLoading(false);
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("question", question);
-
-      const response = await fetch("https://ai-chat.whodev.top/ask", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Patient-Id": patientId,
-        },
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.ok && data.data) {
-        const botMessage = {
-          id: Date.now() + 1,
-          type: "bot",
-          content: data.data.text,
-          structured: data.data.structured,
-          confidence: data.data.confidence,
-          meta: data.data.meta,
-          timestamp: new Date(),
-        };
-
-        setMessages((prev) => [...prev, botMessage]);
-      } else {
-        throw new Error(data.error || "Failed to get response");
-      }
+      setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       console.error("Chat error:", error);
       toast.error("Không thể kết nối với trợ lý AI. Vui lòng thử lại!");
