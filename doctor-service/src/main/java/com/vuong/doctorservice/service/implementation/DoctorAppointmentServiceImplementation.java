@@ -51,7 +51,7 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
             DoctorDto doctorDto = doctorService.getCurrentDoctor();
             log.info("Doctor found with id: {}", doctorDto.getDoctorId());
 
-            if (isSlotOverlapping(requestDto)) {
+            if (this.isSlotOverlapping(requestDto)) {
                 throw new CustomException(new ResponseMessageDto("Time slot for appointment overlaps with existing slot", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
             }
 
@@ -60,6 +60,12 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
             LocalTime slotTime = requestDto.getStartTime();
             Long perPatientTime = requestDto.getPerPatientTimeInMinutes();
             LocalTime endTime = requestDto.getEndTime();
+
+            if (requestDto.getDate().isBefore(LocalDate.now())) {
+                throw new CustomException(
+                        new ResponseMessageDto("Date cannot be earlier than today", HttpStatus.BAD_REQUEST)
+                );
+            }
 
             if (Duration.between(slotTime, endTime).toMinutes() < perPatientTime) {
                 throw new CustomException(new ResponseMessageDto("Per patient time exceeds the slot window", HttpStatus.BAD_REQUEST), HttpStatus.BAD_REQUEST);
@@ -595,7 +601,8 @@ public class DoctorAppointmentServiceImplementation implements DoctorAppointment
     private boolean isSlotOverlapping(AppointmentSlotRequestDto requestDto) throws CustomException {
         DoctorDto doctorDto = doctorService.getCurrentDoctor();
         List<DoctorAvailabilityEntity> existingSlots = doctorAvailabilityRepository.findByDoctorIdAndDate(
-                doctorDto.getDoctorId(), requestDto.getDate());
+                doctorDto.getDoctorId(), requestDto.getDate()
+        );
 
         LocalTime newSlotStartTime = requestDto.getStartTime();
         LocalTime newSlotEndTime = requestDto.getEndTime();

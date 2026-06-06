@@ -25,7 +25,8 @@ public class AppointmentController {
         doctorAppointmentService.createAppointmentSlot(slotRequest);
         log.info("Appointment slots created successfully");
 
-        ResponseMessageDto responseMessageDto = new ResponseMessageDto("Appointments created successfully", HttpStatus.CREATED);
+        ResponseMessageDto responseMessageDto =
+                new ResponseMessageDto("Appointments created successfully", HttpStatus.CREATED);
 
         return new ResponseEntity<>(responseMessageDto, HttpStatus.CREATED);
     }
