@@ -455,7 +455,7 @@ const AvailableAppointments = () => {
                     <div className="space-y-3">
                       <button
                         onClick={() =>
-                          handleBookAppointment(appointment, "In-Person")
+                          handleBookAppointment(appointment, "In_Person")
                         }
                         disabled={
                           bookingAppointment === appointment.availabilityId
